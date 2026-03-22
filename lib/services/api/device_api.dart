@@ -29,4 +29,8 @@ class DeviceApi {
   static Future<Map<String, dynamic>> deleteDevice(String id) async {
     return ApiService.delete(ApiConstants.device(id));
   }
+
+  static Future<Map<String, dynamic>> rotateApiKey(String id) async {
+    return ApiService.post('${ApiConstants.device(id)}/rotate-key', {});
+  }
 }

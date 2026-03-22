@@ -10,6 +10,8 @@ class NumberFormatter {
     return '$prefix${value.toStringAsFixed(1)}%';
   }
 
+  static String peso(double value) => '\$${value.toStringAsFixed(2)}';
+
   static String points(int value) => value.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
 }

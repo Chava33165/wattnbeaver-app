@@ -67,57 +67,97 @@ class _WaterScreenState extends State<WaterScreen> {
 
   Widget _buildSummaryCards(WaterProvider provider) {
     final summary = provider.summary;
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: StatCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'FLUJO ACTUAL',
-                  style: AppTextStyles.caption2.copyWith(
-                    color: AppColors.textTertiary,
-                    letterSpacing: 1.2,
-                  ),
+        Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'FLUJO ACTUAL',
+                      style: AppTextStyles.caption2.copyWith(
+                        color: AppColors.textTertiary,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      summary != null
+                          ? '${summary.avgFlow.toStringAsFixed(2)} L/min'
+                          : '--',
+                      style: AppTextStyles.statNumber
+                          .copyWith(color: AppColors.waterPrimary),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: StatCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'VOLUMEN TOTAL',
+                      style: AppTextStyles.caption2.copyWith(
+                        color: AppColors.textTertiary,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      summary != null
+                          ? NumberFormatter.liters(summary.totalLiters)
+                          : '--',
+                      style: AppTextStyles.statNumber
+                          .copyWith(color: AppColors.waterDark),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (summary != null) ...[
+          const SizedBox(height: 12),
+          StatCard(
+            child: Row(
+              children: [
+                const Icon(Icons.attach_money,
+                    color: AppColors.waterPrimary, size: 20),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'COSTO ESTIMADO',
+                      style: AppTextStyles.caption2.copyWith(
+                        color: AppColors.textTertiary,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      NumberFormatter.peso(summary.totalLiters * 0.05),
+                      style: AppTextStyles.title3
+                          .copyWith(color: AppColors.waterPrimary),
+                    ),
+                  ],
+                ),
+                const Spacer(),
                 Text(
-                  summary != null
-                      ? '${summary.avgFlow.toStringAsFixed(2)} L/min'
-                      : '--',
-                  style: AppTextStyles.statNumber
-                      .copyWith(color: AppColors.waterPrimary),
+                  '\$0.05 / L',
+                  style: AppTextStyles.caption2
+                      .copyWith(color: AppColors.textTertiary),
                 ),
               ],
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: StatCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'VOLUMEN TOTAL',
-                  style: AppTextStyles.caption2.copyWith(
-                    color: AppColors.textTertiary,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  summary != null
-                      ? NumberFormatter.liters(summary.totalLiters)
-                      : '--',
-                  style: AppTextStyles.statNumber
-                      .copyWith(color: AppColors.waterDark),
-                ),
-              ],
-            ),
-          ),
-        ),
+        ],
       ],
     );
   }

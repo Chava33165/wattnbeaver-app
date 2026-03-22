@@ -30,6 +30,7 @@ class Device {
   final String deviceType;
   final String location;
   final String status;
+  final String apiKey;
   final DeviceReading? currentReading;
   final DateTime? createdAt;
 
@@ -40,6 +41,7 @@ class Device {
     required this.deviceType,
     this.location = '',
     this.status = 'active',
+    this.apiKey = '',
     this.currentReading,
     this.createdAt,
   });
@@ -52,6 +54,7 @@ class Device {
       deviceType: json['device_type'] ?? 'energy',
       location: json['location'] ?? '',
       status: json['status'] ?? 'active',
+      apiKey: json['api_key']?.toString() ?? '',
       currentReading: json['current_reading'] != null
           ? DeviceReading.fromJson(json['current_reading'])
           : null,
@@ -70,11 +73,15 @@ class Device {
     };
   }
 
-  bool get isOnline => status == 'active';
+  // Online = tiene lectura reciente (menos de 5 min) o al menos una lectura
+  bool get isOnline => currentReading != null
+      ? (currentReading!.timestamp == null ||
+          DateTime.now().difference(currentReading!.timestamp!).inMinutes < 5)
+      : false;
   bool get isEnergy => deviceType == 'energy';
   bool get isWater => deviceType == 'water';
 
-  Device copyWith({String? status}) {
+  Device copyWith({String? status, String? apiKey}) {
     return Device(
       id: id,
       deviceId: deviceId,
@@ -82,6 +89,7 @@ class Device {
       deviceType: deviceType,
       location: location,
       status: status ?? this.status,
+      apiKey: apiKey ?? this.apiKey,
       currentReading: currentReading,
       createdAt: createdAt,
     );

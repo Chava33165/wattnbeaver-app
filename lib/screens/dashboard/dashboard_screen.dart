@@ -239,6 +239,12 @@ class _DashboardHomeState extends State<_DashboardHome> {
                     const SizedBox(height: 24),
                   ],
 
+                  // Reports quick access
+                  _sectionHeader('REPORTES Y COSTOS'),
+                  const SizedBox(height: 12),
+                  _buildReportsCard(context),
+                  const SizedBox(height: 24),
+
                   // Gamification
                   GamificationWidget(gamification: dashboard.gamification),
                   const SizedBox(height: 24),
@@ -310,6 +316,61 @@ class _DashboardHomeState extends State<_DashboardHome> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildReportsCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, AppRoutes.reports),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.energyPrimary.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.energyPrimary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.receipt_long,
+                color: AppColors.energyPrimary,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Estimación de costos',
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    'Reportes diario, semanal y mensual',
+                    style: AppTextStyles.caption1
+                        .copyWith(color: AppColors.textTertiary),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: AppColors.textTertiary,
+            ),
+          ],
+        ),
       ),
     );
   }

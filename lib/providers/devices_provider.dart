@@ -41,7 +41,7 @@ class DevicesProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> linkDevice({
+  Future<Device?> linkDevice({
     required String deviceId,
     required String deviceName,
     required String deviceType,
@@ -58,11 +58,29 @@ class DevicesProvider extends ChangeNotifier {
       final newDevice = Device.fromJson(data['device'] ?? data);
       devices.insert(0, newDevice);
       notifyListeners();
-      return true;
+      return newDevice;
     } catch (e) {
       error = e.toString();
       notifyListeners();
-      return false;
+      return null;
+    }
+  }
+
+  Future<String?> rotateApiKey(String deviceId) async {
+    try {
+      final response = await DeviceApi.rotateApiKey(deviceId);
+      final data = response['data'] ?? response;
+      final updated = Device.fromJson(data['device'] ?? data);
+      final idx = devices.indexWhere((d) => d.id == deviceId);
+      if (idx != -1) {
+        devices[idx] = updated;
+        notifyListeners();
+      }
+      return updated.apiKey;
+    } catch (e) {
+      error = e.toString();
+      notifyListeners();
+      return null;
     }
   }
 
@@ -73,8 +91,7 @@ class DevicesProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      error = e.toString();
-      notifyListeners();
+      // No sobreescribir el error global para no reemplazar la pantalla
       return false;
     }
   }

@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'http://100.69.129.83:3000/api/v1';
+  static const String baseUrl = 'https://wattnbeaver-api.wattnbeaver.site/api/v1';
 
   // Auth
   static const String register = '/auth/register';
@@ -27,6 +27,13 @@ class ApiConstants {
   static const String alerts = '/alerts';
   static String acknowledgeAlert(String id) => '/alerts/$id/acknowledge';
   static String resolveAlert(String id) => '/alerts/$id/resolve';
+
+  // Reports
+  static const String reportsDaily = '/reports/daily';
+  static const String reportsWeekly = '/reports/weekly';
+  static const String reportsMonthly = '/reports/monthly';
+  static String reportsExport(String period, String format) =>
+      '/reports/export/$period/$format';
 
   // Gamification
   static const String gamificationProfile = '/gamification/profile';

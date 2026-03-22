@@ -140,7 +140,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
 
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (success != null && mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

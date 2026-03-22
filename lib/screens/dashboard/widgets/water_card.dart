@@ -68,7 +68,7 @@ class WaterCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            if (summary != null)
+            if (summary != null) ...[
               Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -92,6 +92,17 @@ class WaterCard extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 6),
+              Center(
+                child: Text(
+                  '≈ ${NumberFormatter.peso(summary!.totalLiters * 0.05)}',
+                  style: AppTextStyles.caption2.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

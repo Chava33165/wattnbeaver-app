@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/WATT/wattnbeaver-backend/backend/src/controllers/water/**)",
+      "Read(//c/WATT/wattnbeaver-backend/backend/src/controllers/**)"
+    ]
+  }
+}

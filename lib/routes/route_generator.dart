@@ -6,6 +6,7 @@ import '../screens/auth/register_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/devices/devices_screen.dart';
 import '../screens/devices/add_device_screen.dart';
+import '../screens/devices/provision_device_screen.dart';
 import '../screens/devices/device_detail_screen.dart';
 import '../screens/energy/energy_screen.dart';
 import '../screens/water/water_screen.dart';
@@ -13,6 +14,7 @@ import '../screens/alerts/alerts_screen.dart';
 import '../screens/gamification/gamification_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/settings_screen.dart';
+import '../screens/reports/reports_screen.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -29,6 +31,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const DevicesScreen());
       case AppRoutes.addDevice:
         return MaterialPageRoute(builder: (_) => const AddDeviceScreen());
+      case AppRoutes.provisionDevice:
+        return MaterialPageRoute(builder: (_) => const ProvisionDeviceScreen());
       case AppRoutes.deviceDetail:
         return MaterialPageRoute(
           builder: (_) => const DeviceDetailScreen(),
@@ -46,6 +50,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case AppRoutes.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
+      case AppRoutes.reports:
+        return MaterialPageRoute(builder: (_) => const ReportsScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

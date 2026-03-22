@@ -35,9 +35,9 @@ class _DevicesScreenState extends State<DevicesScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: AppColors.energyPrimary),
+            icon: const Icon(Icons.add, color: AppColors.waterPrimary),
             onPressed: () async {
-              await Navigator.pushNamed(context, AppRoutes.addDevice);
+              await Navigator.pushNamed(context, AppRoutes.provisionDevice);
               if (context.mounted) {
                 context.read<DevicesProvider>().loadDevices();
               }
@@ -175,7 +175,15 @@ class _DevicesScreenState extends State<DevicesScreen> {
       ),
     );
     if (confirmed == true) {
-      await provider.deleteDevice(id);
+      final ok = await provider.deleteDevice(id);
+      if (!ok && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error al eliminar el dispositivo'),
+            backgroundColor: AppColors.alertRed,
+          ),
+        );
+      }
     }
   }
 }
