@@ -76,6 +76,39 @@ class _EnergyScreenState extends State<EnergyScreen> {
     );
   }
 
+  static const _meses = [
+    '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  ];
+
+  String _periodDateLabel(String period) {
+    final now = DateTime.now();
+    final mes = _meses[now.month];
+    if (period == 'month') return '$mes ${now.year}';
+    if (period == 'year') return '${now.year}';
+    if (period == 'day') {
+      return '${now.day} $mes ${now.year}';
+    }
+    // week: "17–23 Mar 2026"
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final sunday = monday.add(const Duration(days: 6));
+    final mesLunes = _meses[monday.month].substring(0, 3);
+    final mesDom = _meses[sunday.month].substring(0, 3);
+    if (monday.month == sunday.month) {
+      return '${monday.day}–${sunday.day} $mesLunes ${now.year}';
+    }
+    return '${monday.day} $mesLunes – ${sunday.day} $mesDom ${now.year}';
+  }
+
+  String _periodLabel(String period) {
+    switch (period) {
+      case 'day':   return 'HOY';
+      case 'month': return 'MES';
+      case 'year':  return 'AÑO';
+      default:      return 'SEMANA';
+    }
+  }
+
   // ─── Resumen ────────────────────────────────────────────────────────────────
 
   Widget _buildSummaryCards(EnergyProvider provider) {
@@ -88,18 +121,22 @@ class _EnergyScreenState extends State<EnergyScreen> {
               child: _SummaryTile(
                 label: 'POTENCIA ACTUAL',
                 value: summary != null
-                    ? NumberFormatter.watts(summary.avgPower)
+                    ? (summary.onlineDevices > 0
+                        ? NumberFormatter.watts(summary.avgPower)
+                        : 'Inactivo')
                     : '--',
                 icon: Icons.bolt,
-                color: AppColors.energyPrimary,
+                color: summary != null && summary.onlineDevices > 0
+                    ? AppColors.energyPrimary
+                    : AppColors.textTertiary,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _SummaryTile(
-                label: 'ENERGÍA TOTAL',
-                value: summary != null
-                    ? NumberFormatter.kwh(summary.totalKwh)
+                label: 'CONSUMO ${_periodLabel(provider.selectedPeriod)}',
+                value: provider.history != null
+                    ? NumberFormatter.kwh(provider.history!.weekTotal)
                     : '--',
                 icon: Icons.electric_meter_outlined,
                 color: AppColors.energyDark,
@@ -133,7 +170,8 @@ class _EnergyScreenState extends State<EnergyScreen> {
                         )),
                     const SizedBox(height: 2),
                     Text(
-                      NumberFormatter.peso(summary.totalKwh * 2.5),
+                      NumberFormatter.peso(
+                          (provider.history?.weekTotal ?? 0) * 2.5),
                       style: AppTextStyles.title3
                           .copyWith(color: AppColors.energyPrimary),
                     ),
@@ -154,7 +192,7 @@ class _EnergyScreenState extends State<EnergyScreen> {
   // ─── Selector de período ─────────────────────────────────────────────────────
 
   Widget _buildPeriodSelector(EnergyProvider provider) {
-    final periods = {'day': 'Hoy', 'week': 'Semana', 'month': 'Mes'};
+    final periods = {'day': 'Hoy', 'week': 'Semana', 'month': 'Mes', 'year': 'Año'};
     return Row(
       children: periods.entries.map((e) {
         final selected = provider.selectedPeriod == e.key;
@@ -169,8 +207,11 @@ class _EnergyScreenState extends State<EnergyScreen> {
               decoration: BoxDecoration(
                 color: selected
                     ? AppColors.energyPrimary
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                    : AppColors.cardSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: selected
+                    ? null
+                    : Border.all(color: AppColors.borderSubtle),
                 boxShadow: selected
                     ? [
                         BoxShadow(
@@ -203,14 +244,64 @@ class _EnergyScreenState extends State<EnergyScreen> {
   List<_ChartSlot> _buildSlots(EnergyProvider provider) {
     final period = provider.selectedPeriod;
     final days = provider.history?.days ?? [];
-    final int minBars = period == 'month' ? 30 : 7;
 
+    if (period == 'day') {
+      // 24 slots fijos (00:00–23:00). Cada dato va en su hora exacta.
+      final Map<String, double> kwhByHour = {};
+      for (final d in days) {
+        // d.date = "2026-03-23T19:00:00" → clave "19"
+        final hourKey = d.date.length >= 13 ? d.date.substring(11, 13) : '';
+        if (hourKey.isNotEmpty) {
+          kwhByHour[hourKey] = (kwhByHour[hourKey] ?? 0.0) + d.totalKwh;
+        }
+      }
+      return List.generate(24, (i) {
+        final h = i.toString().padLeft(2, '0');
+        return _ChartSlot(label: '$h:00', value: kwhByHour[h] ?? 0.0);
+      });
+    }
+
+    if (period == 'month') {
+      // Un slot por día del mes actual, label = número de día "01"–"31"
+      final now = DateTime.now();
+      final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+      final Map<String, double> kwhByDay = {};
+      for (final d in days) {
+        // d.date = "2026-03-24" → clave "24"
+        final dayKey = d.date.length >= 10 ? d.date.substring(8, 10) : '';
+        if (dayKey.isNotEmpty) {
+          kwhByDay[dayKey] = (kwhByDay[dayKey] ?? 0.0) + d.totalKwh;
+        }
+      }
+      return List.generate(daysInMonth, (i) {
+        final day = (i + 1).toString().padLeft(2, '0');
+        return _ChartSlot(label: day, value: kwhByDay[day] ?? 0.0);
+      });
+    }
+
+    if (period == 'year') {
+      // 12 slots fijos (Ene–Dic), label = abreviación del mes
+      const abbr = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      final now = DateTime.now();
+      final Map<String, double> kwhByMonth = {};
+      for (final d in days) {
+        // d.date = "2026-03" → clave "2026-03"
+        if (d.date.length >= 7) kwhByMonth[d.date] = d.totalKwh;
+      }
+      return List.generate(12, (i) {
+        final monthKey = '${now.year}-${(i + 1).toString().padLeft(2, '0')}';
+        return _ChartSlot(label: abbr[i], value: kwhByMonth[monthKey] ?? 0.0);
+      });
+    }
+
+    // Semana (7 días) — padear con vacíos al inicio si faltan días
     final slots = days.map((d) {
+      // d.date = "2026-03-24" → "03-24"
       final label = d.date.length >= 10 ? d.date.substring(5, 10) : d.date;
       return _ChartSlot(label: label, value: d.totalKwh);
     }).toList();
 
-    while (slots.length < minBars) {
+    while (slots.length < 7) {
       slots.insert(0, const _ChartSlot(label: '', value: 0));
     }
 
@@ -251,6 +342,7 @@ class _EnergyScreenState extends State<EnergyScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,6 +363,13 @@ class _EnergyScreenState extends State<EnergyScreen> {
                   ),
                 ],
               ),
+              Text(
+                _periodDateLabel(provider.selectedPeriod),
+                style: AppTextStyles.caption1.copyWith(
+                  color: AppColors.textTertiary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -285,8 +384,10 @@ class _EnergyScreenState extends State<EnergyScreen> {
                   touchTooltipData: BarTouchTooltipData(
                     tooltipBgColor: AppColors.energyDark,
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final label = slots[group.x].label;
+                      final line1 = label.isNotEmpty ? '$label\n' : '';
                       return BarTooltipItem(
-                        NumberFormatter.kwh(rod.toY),
+                        '$line1${NumberFormatter.kwh(rod.toY)}',
                         const TextStyle(
                             color: Colors.white,
                             fontSize: 11,
@@ -312,8 +413,14 @@ class _EnergyScreenState extends State<EnergyScreen> {
                         if (i < 0 || i >= slots.length) {
                           return const SizedBox.shrink();
                         }
-                        // Mostrar solo algunas etiquetas para no saturar
-                        final step = (slots.length / 4).ceil();
+                        // Día: cada 6h | Mes: cada 5 días | Año: todos | Semana: cada ~4
+                        final step = provider.selectedPeriod == 'day'
+                            ? 6
+                            : provider.selectedPeriod == 'month'
+                                ? 5
+                                : provider.selectedPeriod == 'year'
+                                    ? 1
+                                    : (slots.length / 4).ceil();
                         if (i % step != 0 && i != slots.length - 1) {
                           return const SizedBox.shrink();
                         }
@@ -339,14 +446,21 @@ class _EnergyScreenState extends State<EnergyScreen> {
                 ),
                 borderData: FlBorderData(show: false),
                 barGroups: List.generate(slots.length, (i) {
+                  final barWidth = provider.selectedPeriod == 'day'
+                      ? 6.0
+                      : provider.selectedPeriod == 'month'
+                          ? 5.0
+                          : provider.selectedPeriod == 'year'
+                              ? 14.0
+                              : 14.0;
                   return BarChartGroupData(
                     x: i,
                     barRods: [
                       BarChartRodData(
                         toY: slots[i].value,
-                        width: 10,
+                        width: barWidth,
                         borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(6)),
+                            top: Radius.circular(4)),
                         gradient: LinearGradient(
                           colors: [
                             AppColors.energyPrimary,

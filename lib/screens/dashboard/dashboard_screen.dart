@@ -1,8 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_strings.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/theme/neu_glass.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
@@ -11,6 +12,9 @@ import '../../services/mqtt/mqtt_handler.dart';
 import '../../services/mqtt/mqtt_service.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_display.dart';
+import '../../core/widgets/neu_glass_scaffold.dart';
+import '../../core/widgets/glass_card.dart';
+import '../../core/widgets/neu_button.dart';
 import '../energy/energy_screen.dart';
 import '../water/water_screen.dart';
 import '../devices/devices_screen.dart';
@@ -60,41 +64,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return NeuGlassScaffold(
+      bottomNavigationBar: _buildNeuBottomBar(context, isDark),
+      child: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Inicio',
+    );
+  }
+
+  Widget _buildNeuBottomBar(BuildContext context, bool isDark) {
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.black.withValues(alpha: 0.3)
+              : Colors.white.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 1.5,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bolt_outlined),
-            activeIcon: Icon(Icons.bolt),
-            label: 'Energia',
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _navItem(Icons.home_rounded, 0),
+                _navItem(Icons.bolt_rounded, 1),
+                _navItem(Icons.water_drop_rounded, 2),
+                _navItem(Icons.devices_rounded, 3),
+                _navItem(Icons.person_rounded, 4),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.water_drop_outlined),
-            activeIcon: Icon(Icons.water_drop),
-            label: 'Agua',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.devices_outlined),
-            activeIcon: Icon(Icons.devices),
-            label: 'Dispositivos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _navItem(IconData icon, int index) {
+    final bool isSelected = _currentIndex == index;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: () => setState(() => _currentIndex = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 44,
+        height: 44,
+        decoration: isSelected
+            ? BoxDecoration(
+                color: AppColors.mentaMedio,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.mentaMedio.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ],
+              )
+            : const BoxDecoration(
+                color: Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+        child: Icon(
+          icon,
+          color: isSelected
+              ? Colors.white
+              : (isDark ? Colors.white54 : AppColors.tierra),
+          size: 24,
+        ),
       ),
     );
   }
@@ -120,269 +167,137 @@ class _DashboardHomeState extends State<_DashboardHome> {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
 
-    return SafeArea(
-      child: Consumer<DashboardProvider>(
-        builder: (context, dashboard, _) {
-          if (dashboard.isLoading) {
-            return const LoadingIndicator();
-          }
+    return Consumer<DashboardProvider>(
+      builder: (context, dashboard, _) {
+        if (dashboard.isLoading) {
+          return const Center(child: LoadingIndicator());
+        }
 
-          if (dashboard.error != null) {
-            return ErrorDisplay(
-              message: dashboard.error!,
-              onRetry: () => dashboard.loadDashboard(),
-            );
-          }
+        if (dashboard.error != null) {
+          return ErrorDisplay(
+            message: dashboard.error!,
+            onRetry: () => dashboard.loadDashboard(),
+          );
+        }
 
-          return RefreshIndicator(
-            color: AppColors.energyPrimary,
-            onRefresh: () => dashboard.loadDashboard(),
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        return RefreshIndicator(
+          color: AppColors.mentaMedio,
+          onRefresh: () => dashboard.loadDashboard(),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              // ── Header con saludo + avatar ──
+              Row(
                 children: [
-                  // Header
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor:
-                            AppColors.energyPrimary.withValues(alpha: 0.15),
-                        child: Text(
-                          user?.name.isNotEmpty == true
-                              ? user!.name[0].toUpperCase()
-                              : 'U',
-                          style: AppTextStyles.title3.copyWith(
-                            color: AppColors.energyPrimary,
-                          ),
-                        ),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: NeuGlass.neuRaised(context, radius: 24),
+                    child: Center(
+                      child: Text(
+                        user?.name.isNotEmpty == true
+                            ? user!.name[0].toUpperCase()
+                            : 'W',
+                        style: AppTextStyles.title(context),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${DateFormatter.greeting()},',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.textTertiary,
-                              ),
-                            ),
-                            Text(
-                              user?.name ?? 'Usuario',
-                              style: AppTextStyles.title3,
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, AppRoutes.alerts);
-                        },
-                        icon: Stack(
-                          children: [
-                            const Icon(Icons.notifications_outlined),
-                            if (dashboard.recentAlerts.isNotEmpty)
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.alertRed,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // Energy & Water summary cards
-                  Row(
-                    children: [
-                      EnergyCard(
-                        summary: dashboard.energySummary,
-                        onTap: () {
-                          // Switch to energy tab
-                        },
-                      ),
-                      const SizedBox(width: 12),
-                      WaterCard(
-                        summary: dashboard.waterSummary,
-                        onTap: () {
-                          // Switch to water tab
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Weekly chart
-                  WeeklyChart(
-                    energyWeek: dashboard.energyWeek,
-                    waterWeek: dashboard.waterWeek,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Devices quick access
-                  if (dashboard.devices.isNotEmpty) ...[
-                    _sectionHeader(AppStrings.yourDevices),
-                    const SizedBox(height: 12),
-                    DeviceQuickAccess(devices: dashboard.devices),
-                    const SizedBox(height: 24),
-                  ],
-
-                  // Reports quick access
-                  _sectionHeader('REPORTES Y COSTOS'),
-                  const SizedBox(height: 12),
-                  _buildReportsCard(context),
-                  const SizedBox(height: 24),
-
-                  // Gamification
-                  GamificationWidget(gamification: dashboard.gamification),
-                  const SizedBox(height: 24),
-
-                  // Recent alerts
-                  if (dashboard.recentAlerts.isNotEmpty) ...[
-                    Row(
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: _sectionHeader(AppStrings.recentAlerts)),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, AppRoutes.alerts);
-                          },
-                          child: const Text(AppStrings.viewAll),
+                        Text(
+                          '${DateFormatter.greeting()},',
+                          style: AppTextStyles.muted(context),
+                        ),
+                        Text(
+                          user?.name ?? 'Beaver',
+                          style: AppTextStyles.title(context),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    ...dashboard.recentAlerts.map((alert) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border(
-                                left: BorderSide(
-                                  color: alert.isCritical
-                                      ? AppColors.alertRed
-                                      : alert.isWarning
-                                          ? AppColors.accentOrange
-                                          : AppColors.waterPrimary,
-                                  width: 3,
-                                ),
+                  ),
+                  NeuButton(
+                    radius: 24,
+                    width: 48,
+                    height: 48,
+                    padding: EdgeInsets.zero,
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.alerts),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(
+                          Icons.notifications_rounded,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : AppColors.cafeOscuro,
+                        ),
+                        if (dashboard.recentAlerts.isNotEmpty)
+                          Positioned(
+                            right: 12,
+                            top: 12,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.coralIntenso,
+                                shape: BoxShape.circle,
                               ),
                             ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  alert.isCritical
-                                      ? Icons.error
-                                      : alert.isWarning
-                                          ? Icons.warning_amber
-                                          : Icons.info_outline,
-                                  color: alert.isCritical
-                                      ? AppColors.alertRed
-                                      : alert.isWarning
-                                          ? AppColors.accentOrange
-                                          : AppColors.waterPrimary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    alert.message,
-                                    style: AppTextStyles.bodyMedium,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
-                        )),
-                  ],
-                  const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+              const SizedBox(height: 24),
 
-  Widget _buildReportsCard(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, AppRoutes.reports),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.energyPrimary.withValues(alpha: 0.3),
+              // ── Métrica eléctrica principal ──
+              EnergyCard(
+                summary: dashboard.energySummary,
+                onTap: () {},
+              ),
+              const SizedBox(height: 14),
+
+              // ── Métrica hídrica principal ──
+              WaterCard(
+                summary: dashboard.waterSummary,
+                onTap: () {},
+              ),
+              const SizedBox(height: 14),
+
+              // ── Gráfico Semanal ──
+              WeeklyChart(
+                energyWeek: dashboard.energyWeek,
+                waterWeek: dashboard.waterWeek,
+              ),
+              const SizedBox(height: 14),
+
+              // ── Dispositivos ──
+              if (dashboard.devices.isNotEmpty) ...[
+                GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Tus dispositivos',
+                          style: AppTextStyles.title(context)),
+                      const SizedBox(height: 16),
+                      DeviceQuickAccess(devices: dashboard.devices),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+
+              // ── Gamificación ──
+              GamificationWidget(gamification: dashboard.gamification),
+              const SizedBox(height: 80),
+            ],
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.energyPrimary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.receipt_long,
-                color: AppColors.energyPrimary,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Estimación de costos',
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(fontWeight: FontWeight.w600),
-                  ),
-                  Text(
-                    'Reportes diario, semanal y mensual',
-                    style: AppTextStyles.caption1
-                        .copyWith(color: AppColors.textTertiary),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              color: AppColors.textTertiary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sectionHeader(String title) {
-    return Text(
-      title,
-      style: AppTextStyles.caption1.copyWith(
-        color: AppColors.textTertiary,
-        letterSpacing: 1.5,
-        fontWeight: FontWeight.w600,
-      ),
+        );
+      },
     );
   }
 }

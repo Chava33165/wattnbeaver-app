@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/text_styles.dart';
-import '../../../core/utils/number_formatter.dart';
+import '../../../core/widgets/glass_card.dart';
 import '../../../models/water_summary.dart';
-import '../../../widgets/cards/stat_card.dart';
-import '../../../widgets/charts/activity_ring.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class WaterCard extends StatelessWidget {
   final WaterSummary? summary;
@@ -14,95 +13,120 @@ class WaterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: StatCard(
-        onTap: onTap,
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Datos simulados para LineChart
+    final List<FlSpot> spots = [
+      const FlSpot(0, 150),
+      const FlSpot(1, 140),
+      const FlSpot(2, 160),
+      const FlSpot(3, 145),
+      const FlSpot(4, 180),
+      const FlSpot(5, 170),
+      const FlSpot(6, 195),
+    ];
+
+    double totalLiters = summary?.totalLiters ?? 185.0;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: GlassCard(
+        accent: false,
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'AGUA',
-                  style: AppTextStyles.caption1.copyWith(
-                    color: AppColors.textTertiary,
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      totalLiters.toStringAsFixed(0),
+                      style: AppTextStyles.display(context),
+                    ),
+                    const SizedBox(width: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        'L',
+                        style: AppTextStyles.muted(context),
+                      ),
+                    ),
+                  ],
                 ),
-                const Spacer(),
-                const Icon(
-                  Icons.water_drop,
-                  color: AppColors.waterPrimary,
-                  size: 20,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.cieloMedio.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.water_drop,
+                    color: AppColors.cieloMedio,
+                    size: 24,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Center(
-              child: ActivityRing(
-                progress: summary != null
-                    ? (summary!.totalLiters / 500).clamp(0.0, 1.0)
-                    : 0,
-                color: AppColors.waterPrimary,
-                size: 72,
-                strokeWidth: 7,
-                child: Text(
-                  summary != null
-                      ? summary!.totalLiters.toStringAsFixed(0)
-                      : '--',
-                  style: AppTextStyles.body.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.waterPrimary,
-                  ),
-                ),
-              ),
+            const SizedBox(height: 4),
+            Text(
+              'Consumo hídrico hoy',
+              style: AppTextStyles.muted(context),
             ),
-            const SizedBox(height: 8),
-            Center(
-              child: Text(
-                'Litros hoy',
-                style: AppTextStyles.caption2.copyWith(
-                  color: AppColors.textTertiary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (summary != null) ...[
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: summary!.changePercent <= 0
-                        ? AppColors.energyPrimary.withValues(alpha: 0.1)
-                        : AppColors.alertRed.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    NumberFormatter.percent(summary!.changePercent),
-                    style: AppTextStyles.caption1.copyWith(
-                      color: summary!.changePercent <= 0
-                          ? AppColors.energyDark
-                          : AppColors.alertRed,
-                      fontWeight: FontWeight.w600,
+            const SizedBox(height: 20),
+            // LineChart embebido
+            SizedBox(
+              height: 80,
+              width: double.infinity,
+              child: LineChart(
+                LineChartData(
+                  gridData: const FlGridData(show: false),
+                  titlesData: const FlTitlesData(show: false),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      gradient: AppColors.cardHidrica,
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.cieloMedio.withValues(alpha: 0.25),
+                            AppColors.cieloClaro.withValues(alpha: 0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ],
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      tooltipBgColor: isDark
+                          ? Colors.black.withValues(alpha: 0.5)
+                          : Colors.white.withValues(alpha: 0.8),
+                      getTooltipItems: (touchedSpots) {
+                        return touchedSpots
+                            .map((spot) => LineTooltipItem(
+                                  '${spot.y} L',
+                                  AppTextStyles.chip(context)
+                                      .copyWith(color: AppColors.cieloMedio),
+                                ))
+                            .toList();
+                      },
                     ),
                   ),
                 ),
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOut,
               ),
-              const SizedBox(height: 6),
-              Center(
-                child: Text(
-                  '≈ ${NumberFormatter.peso(summary!.totalLiters * 0.05)}',
-                  style: AppTextStyles.caption2.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ],
         ),
       ),

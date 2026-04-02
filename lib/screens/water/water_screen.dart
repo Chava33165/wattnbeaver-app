@@ -176,11 +176,16 @@ class _WaterScreenState extends State<WaterScreen> {
               label: Text(labels[period]!),
               selected: selected,
               onSelected: (_) => provider.changePeriod(period),
-              selectedColor: AppColors.waterPrimary.withValues(alpha: 0.15),
+              selectedColor: AppColors.waterPrimary,
+              backgroundColor: AppColors.cardSurface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: selected
+                    ? BorderSide.none
+                    : const BorderSide(color: AppColors.borderSubtle),
+              ),
               labelStyle: AppTextStyles.caption1.copyWith(
-                color: selected
-                    ? AppColors.waterPrimary
-                    : AppColors.textSecondary,
+                color: selected ? Colors.white : AppColors.textSecondary,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
