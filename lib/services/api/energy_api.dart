@@ -15,6 +15,16 @@ class EnergyApi {
     );
   }
 
+  static Future<Map<String, dynamic>> getWeeklyStats({
+    required String startDate,
+    required String endDate,
+  }) async {
+    return ApiService.get(
+      ApiConstants.energyWeeklyStats,
+      queryParams: {'startDate': startDate, 'endDate': endDate},
+    );
+  }
+
   static Future<Map<String, dynamic>> getDevices() async {
     return ApiService.get(ApiConstants.energyDevices);
   }
