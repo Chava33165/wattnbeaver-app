@@ -17,6 +17,25 @@ class WaterWeek {
     required this.weekAvg,
   });
 
+  // Nuevo formato: {data: [{fecha, dia_semana, consumo_dia_litros, flujo_promedio_lmin, ...}]}
+  factory WaterWeek.fromWeeklyStats(Map<String, dynamic> json) {
+    final rows = json['data'] as List? ?? [];
+
+    final days = rows.map((r) {
+      final date = r['fecha'] as String? ?? '';
+      final totalLiters =
+          (r['consumo_dia_litros'] as num?)?.toDouble() ?? 0.0;
+      return WaterDay(date: date, totalLiters: totalLiters);
+    }).toList();
+
+    days.sort((a, b) => a.date.compareTo(b.date));
+
+    final weekTotal = days.fold<double>(0, (s, d) => s + d.totalLiters);
+    final weekAvg = days.isEmpty ? 0.0 : weekTotal / days.length;
+
+    return WaterWeek(days: days, weekTotal: weekTotal, weekAvg: weekAvg);
+  }
+
   // json is the inner data object: {data: [{hour, avg_flow, total_volume}]}
   factory WaterWeek.fromJson(Map<String, dynamic> json) {
     final hourlyData = json['data'] as List? ?? [];

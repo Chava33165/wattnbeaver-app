@@ -23,18 +23,25 @@ class DashboardProvider extends ChangeNotifier {
   bool isLoading = true;
   String? error;
 
+  static String _fmtDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
   Future<void> loadDashboard() async {
     isLoading = true;
     error = null;
     notifyListeners();
 
+    final now = DateTime.now();
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final startDate = _fmtDate(monday);
+    final endDate = _fmtDate(now);
+
     try {
       final results = await Future.wait([
-        // Real endpoints:
-        EnergyApi.getTotal(),                       // [0] → {data: {totalPower, totalEnergy, deviceCount, onlineDevices}}
-        WaterApi.getTotal(),                         // [1] → {data: {totalFlow, totalVolume, sensorCount, onlineSensors}}
-        EnergyApi.getHistory(period: 'week'),        // [2] → {data: {data: [{hour, avg_power, total_energy}]}}
-        WaterApi.getHistory(period: 'week'),          // [3] → {data: {data: [{hour, avg_flow, total_volume}]}}
+        EnergyApi.getTotal(),                        // [0] → {data: {totalPower, totalEnergy, deviceCount, onlineDevices}}
+        WaterApi.getTotal(),                          // [1] → {data: {totalFlow, totalVolume, sensorCount, onlineSensors}}
+        EnergyApi.getWeeklyStats(startDate: startDate, endDate: endDate), // [2] → {data: [{fecha, consumo_dia_kwh, ...}]}
+        WaterApi.getWeeklyStats(startDate: startDate, endDate: endDate),  // [3] → {data: [{fecha, consumo_dia_litros, ...}]}
         DeviceApi.getDevices(),                      // [4] → {data: {devices: [], stats: {}, total: N}}
         GamificationApi.getProfile(),               // [5] → {data: {profile: {total_points, current_level, ...}}}
         AlertsApi.getAlerts(acknowledged: false, limit: 3), // [6] → {data: {alerts: [], total: N}}
@@ -48,13 +55,13 @@ class DashboardProvider extends ChangeNotifier {
       final waterData = results[1]['data'] ?? results[1];
       waterSummary = WaterSummary.fromJson(waterData);
 
-      // Energy history (week) → {data: [{hour, avg_power, total_energy}]}
+      // Energy weekly stats → {data: [{fecha, consumo_dia_kwh, ...}]}
       final energyHistoryOuter = results[2]['data'] ?? results[2];
-      energyWeek = EnergyWeek.fromJson(energyHistoryOuter);
+      energyWeek = EnergyWeek.fromWeeklyStats(energyHistoryOuter);
 
-      // Water history (week) → {data: [{hour, avg_flow, total_volume}]}
+      // Water weekly stats → {data: [{fecha, consumo_dia_litros, ...}]}
       final waterHistoryOuter = results[3]['data'] ?? results[3];
-      waterWeek = WaterWeek.fromJson(waterHistoryOuter);
+      waterWeek = WaterWeek.fromWeeklyStats(waterHistoryOuter);
 
       // Devices → {devices: [], stats: {}, total: N}
       final deviceOuter = results[4]['data'] ?? results[4];

@@ -10,6 +10,9 @@ class EnergyProvider extends ChangeNotifier {
   String? error;
   String selectedPeriod = 'week';
 
+  static String _fmt(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
   Future<void> loadEnergy({String period = 'week'}) async {
     isLoading = true;
     error = null;
@@ -17,18 +20,28 @@ class EnergyProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final results = await Future.wait([
-        EnergyApi.getTotal(),
-        EnergyApi.getHistory(period: period),
-      ]);
-
-      // Total: {data: {totalPower, totalEnergy, deviceCount, onlineDevices}}
-      final totalData = results[0]['data'] ?? results[0];
-      summary = EnergySummary.fromJson(totalData);
-
-      // History: {data: {data: [{hour, avg_power, total_energy}]}}
-      final historyOuter = results[1]['data'] ?? results[1];
-      history = EnergyWeek.fromJson(historyOuter);
+      if (period == 'year') {
+        // Año completo: 1 Ene → hoy, agrupado por mes
+        final now = DateTime.now();
+        final startDate = _fmt(DateTime(now.year, 1, 1));
+        final endDate = _fmt(now);
+        final results = await Future.wait([
+          EnergyApi.getTotal(),
+          EnergyApi.getWeeklyStats(startDate: startDate, endDate: endDate),
+        ]);
+        summary = EnergySummary.fromJson(results[0]['data'] ?? results[0]);
+        history = EnergyWeek.fromGroupedByMonth(results[1]['data'] ?? results[1]);
+      } else {
+        final results = await Future.wait([
+          EnergyApi.getTotal(),
+          EnergyApi.getHistory(period: period),
+        ]);
+        summary = EnergySummary.fromJson(results[0]['data'] ?? results[0]);
+        final historyData = results[1]['data'] ?? results[1];
+        history = period == 'day'
+            ? EnergyWeek.fromHourly(historyData)
+            : EnergyWeek.fromGroupedByDay(historyData);
+      }
     } catch (e) {
       error = e.toString();
     } finally {
