@@ -14,6 +14,7 @@ class ApiConstants {
   // Energy
   static const String energyTotal = '/energy/total';
   static const String energyHistory = '/energy/history';
+  static const String energyWeeklyStats = '/energy/statistics/weekly';
   static const String energyDevices = '/energy/devices';
   static String energyDevice(String id) => '/energy/devices/$id';
   static String energyControl(String id) => '/energy/devices/$id/control';
@@ -21,6 +22,7 @@ class ApiConstants {
   // Water
   static const String waterTotal = '/water/total';
   static const String waterHistory = '/water/history';
+  static const String waterWeeklyStats = '/water/statistics/weekly';
   static const String waterSensors = '/water/sensors';
 
   // Alerts
