@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../models/device.dart';
-import '../../providers/devices_provider.dart';
 import '../../services/api/energy_api.dart';
 import '../../widgets/cards/stat_card.dart';
 
@@ -17,7 +14,6 @@ class DeviceDetailScreen extends StatefulWidget {
 
 class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   late Device _device;
-  bool _rotatingKey = false;
   bool _refreshing = false;
 
   @override
@@ -48,48 +44,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     } catch (_) {} finally {
       if (mounted) setState(() => _refreshing = false);
     }
-  }
-
-  Future<void> _rotateApiKey() async {
-    setState(() => _rotatingKey = true);
-    final newKey =
-        await context.read<DevicesProvider>().rotateApiKey(_device.id);
-    if (!mounted) return;
-    setState(() {
-      _rotatingKey = false;
-      if (newKey != null) _device = _device.copyWith(apiKey: newKey);
-    });
-    if (newKey == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al regenerar la clave')),
-      );
-    }
-  }
-
-  void _showRotateDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Regenerar clave'),
-        content: const Text(
-          'La ESP32 dejará de enviar datos hasta que la reconfigures con la nueva clave.\n\n¿Continuar?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _rotateApiKey();
-            },
-            child: const Text('Regenerar',
-                style: TextStyle(color: AppColors.alertRed)),
-          ),
-        ],
-      ),
-    );
   }
 
   String _relativeTime(DateTime? dt) {
@@ -204,11 +158,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                   // ── Actividad y control ──
                   _buildActivityCard(color, isEnergy),
 
-                  // ── API Key (solo si tiene) ──
-                  if (_device.apiKey.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    _buildApiKeyCard(color),
-                  ],
 
                   const SizedBox(height: 32),
                 ]),
@@ -366,83 +315,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 _formatTimestamp(ts)),
 
           // Control remoto (encender/apagar) — pendiente de implementar en backend
-        ],
-      ),
-    );
-  }
-
-  // ── Tarjeta: API Key ESP32 ────────────────────────────────────────────────
-  Widget _buildApiKeyCard(Color color) {
-    return StatCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionLabel('CONFIGURACIÓN ESP32'),
-          const SizedBox(height: 12),
-          Text(
-            'API Key',
-            style:
-                AppTextStyles.caption1.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 6),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.backgroundSecondary,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: color.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _device.apiKey,
-                    style: AppTextStyles.caption1.copyWith(
-                      fontFamily: 'monospace',
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: _device.apiKey));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('API Key copiada')),
-                    );
-                  },
-                  child: Icon(Icons.copy_outlined, size: 20, color: color),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Pega esta clave en el portal WiFi de tu ESP32 (192.168.4.1) al configurarla.',
-            style: AppTextStyles.caption1
-                .copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: _rotatingKey ? null : _showRotateDialog,
-            icon: _rotatingKey
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.refresh, size: 18),
-            label: const Text('Regenerar clave'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.alertRed,
-              minimumSize: const Size.fromHeight(40),
-              side: BorderSide(
-                  color: AppColors.alertRed.withValues(alpha: 0.5)),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-          ),
         ],
       ),
     );
