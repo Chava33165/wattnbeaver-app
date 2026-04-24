@@ -9,19 +9,19 @@ class AppStrings {
   static const String loginSubtitle = 'Inicia sesion para continuar';
   static const String createAccount = 'Crear Cuenta';
   static const String joinSubtitle = 'Unete a WattBeaver';
-  static const String forgotPassword = 'Olvidaste tu contrasena?';
+  static const String forgotPassword = 'Olvidaste tu contraseña?';
   static const String alreadyHaveAccount = 'Ya tienes cuenta? Inicia sesion';
   static const String noAccount = 'No tienes cuenta? Registrate';
 
   // Validation
   static const String emailRequired = 'Email es requerido';
   static const String emailInvalid = 'Email invalido';
-  static const String passwordRequired = 'Contrasena requerida';
+  static const String passwordRequired = 'Contraseña requerida';
   static const String passwordMinLength =
-      'La contrasena debe tener al menos 6 caracteres';
+      'La contraseña debe tener al menos 6 caracteres';
   static const String nameRequired = 'Nombre es requerido';
   static const String nameMinLength = 'Nombre debe tener al menos 3 caracteres';
-  static const String passwordsDoNotMatch = 'Las contrasenas no coinciden';
+  static const String passwordsDoNotMatch = 'Las contraseñas no coinciden';
   static const String acceptTerms = 'Acepto los terminos y condiciones';
 
   // Dashboard
@@ -56,7 +56,7 @@ class AppStrings {
   // Errors
   static const String connectionError = 'Error de conexion';
   static const String serverError = 'Error del servidor, intenta mas tarde';
-  static const String invalidCredentials = 'Email o contrasena incorrectos';
+  static const String invalidCredentials = 'Email o contraseña incorrectos';
   static const String retry = 'Reintentar';
   static const String loading = 'Cargando...';
 }

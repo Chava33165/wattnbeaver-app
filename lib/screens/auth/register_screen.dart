@@ -116,7 +116,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 16),
                 // Password
                 CustomTextField(
-                  label: 'Contrasena',
+                  label: 'Contraseña',
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   prefixIcon: Icons.lock_outline,
@@ -165,7 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 16),
                 // Confirm password
                 CustomTextField(
-                  label: 'Confirmar contrasena',
+                  label: 'Confirmar contraseña',
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirm,
                   prefixIcon: Icons.lock_outline,

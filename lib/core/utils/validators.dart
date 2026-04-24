@@ -7,9 +7,9 @@ class Validators {
   }
 
   static String? password(String? value) {
-    if (value == null || value.isEmpty) return 'Contrasena requerida';
+    if (value == null || value.isEmpty) return 'Contraseña requerida';
     if (value.length < 6) {
-      return 'La contrasena debe tener al menos 6 caracteres';
+      return 'La contraseña debe tener al menos 6 caracteres';
     }
     return null;
   }
@@ -21,8 +21,8 @@ class Validators {
   }
 
   static String? confirmPassword(String? value, String password) {
-    if (value == null || value.isEmpty) return 'Confirma tu contrasena';
-    if (value != password) return 'Las contrasenas no coinciden';
+    if (value == null || value.isEmpty) return 'Confirma tu contraseña';
+    if (value != password) return 'Las contraseñas no coinciden';
     return null;
   }
 
