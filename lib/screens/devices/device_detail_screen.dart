@@ -18,7 +18,6 @@ class DeviceDetailScreen extends StatefulWidget {
 class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   late Device _device;
   bool _rotatingKey = false;
-  bool _loadingControl = false;
   bool _refreshing = false;
 
   @override
@@ -48,33 +47,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       }
     } catch (_) {} finally {
       if (mounted) setState(() => _refreshing = false);
-    }
-  }
-
-  Future<void> _toggleControl(String action) async {
-    setState(() => _loadingControl = true);
-    try {
-      await EnergyApi.controlDevice(_device.deviceId, action);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              action == 'on' ? 'Dispositivo encendido' : 'Dispositivo apagado'),
-          backgroundColor: action == 'on'
-              ? AppColors.energyPrimary
-              : AppColors.alertRed,
-        ),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al controlar el dispositivo'),
-          backgroundColor: AppColors.alertRed,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _loadingControl = false);
     }
   }
 
@@ -393,56 +365,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
             _infoRow(Icons.schedule_outlined, 'Timestamp exacto',
                 _formatTimestamp(ts)),
 
-          if (isEnergy) ...[
-            const SizedBox(height: 16),
-            const Divider(height: 1),
-            const SizedBox(height: 16),
-            _sectionLabel('CONTROL REMOTO'),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed:
-                        _loadingControl ? null : () => _toggleControl('on'),
-                    icon: _loadingControl
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.power_settings_new, size: 18),
-                    label: const Text('Encender'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.energyPrimary,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(42),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed:
-                        _loadingControl ? null : () => _toggleControl('off'),
-                    icon: const Icon(Icons.power_off_outlined, size: 18),
-                    label: const Text('Apagar'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.alertRed,
-                      minimumSize: const Size.fromHeight(42),
-                      side: BorderSide(
-                          color: AppColors.alertRed.withValues(alpha: 0.5)),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+          // Control remoto (encender/apagar) — pendiente de implementar en backend
         ],
       ),
     );
