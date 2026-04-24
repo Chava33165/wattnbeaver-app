@@ -2,22 +2,33 @@ class DeviceReading {
   final double power;
   final double voltage;
   final double current;
+  final double energy;  // kWh acumulado (sensores de energía)
+  final double flow;    // L/min (sensores de agua)
+  final double total;   // Volumen total L (sensores de agua)
   final DateTime? timestamp;
 
   DeviceReading({
     required this.power,
     required this.voltage,
     required this.current,
+    this.energy = 0,
+    this.flow = 0,
+    this.total = 0,
     this.timestamp,
   });
 
   factory DeviceReading.fromJson(Map<String, dynamic> json) {
+    double parseField(String key) =>
+        double.tryParse(json[key]?.toString() ?? '0') ?? 0.0;
     return DeviceReading(
-      power: (json['power'] ?? 0).toDouble(),
-      voltage: (json['voltage'] ?? 0).toDouble(),
-      current: (json['current'] ?? 0).toDouble(),
+      power: parseField('power'),
+      voltage: parseField('voltage'),
+      current: parseField('current'),
+      energy: parseField('energy'),
+      flow: parseField('flow'),
+      total: parseField('total'),
       timestamp: json['timestamp'] != null
-          ? DateTime.tryParse(json['timestamp'])
+          ? DateTime.tryParse(json['timestamp'].toString())
           : null,
     );
   }

@@ -30,7 +30,7 @@ class DeviceQuickAccess extends StatelessWidget {
             onTap: () => Navigator.pushNamed(
               context,
               AppRoutes.deviceDetail,
-              arguments: device.id,
+              arguments: device,
             ),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
