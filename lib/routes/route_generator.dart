@@ -15,6 +15,7 @@ import '../screens/gamification/gamification_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/settings_screen.dart';
 import '../screens/reports/reports_screen.dart';
+import '../screens/onboarding/onboarding_screen.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -52,6 +53,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
       case AppRoutes.reports:
         return MaterialPageRoute(builder: (_) => const ReportsScreen());
+      case AppRoutes.onboarding:
+        return MaterialPageRoute(builder: (_) => const OnboardingScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

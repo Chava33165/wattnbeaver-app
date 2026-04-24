@@ -48,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (success) {
-      Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+      Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

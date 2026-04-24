@@ -5,6 +5,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/theme/text_styles.dart';
 import '../../providers/auth_provider.dart';
 import '../../routes/app_routes.dart';
+import '../../services/storage/storage_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -40,10 +41,17 @@ class _SplashScreenState extends State<SplashScreen>
     final isAuthenticated = await authProvider.checkAuth();
 
     if (!mounted) return;
-    Navigator.pushReplacementNamed(
-      context,
-      isAuthenticated ? AppRoutes.dashboard : AppRoutes.login,
-    );
+
+    if (isAuthenticated) {
+      final onboardingDone = await StorageService.hasCompletedOnboarding();
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(
+        context,
+        onboardingDone ? AppRoutes.dashboard : AppRoutes.onboarding,
+      );
+    } else {
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
+    }
   }
 
   @override
