@@ -41,7 +41,10 @@ class CustomButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
       style: color != null
-          ? ElevatedButton.styleFrom(backgroundColor: color)
+          ? ElevatedButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: Colors.white,
+            )
           : null,
       child: isLoading
           ? const SizedBox(

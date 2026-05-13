@@ -6,7 +6,6 @@ import '../../core/constants/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../models/device.dart';
 import '../../providers/devices_provider.dart';
-import '../../routes/app_routes.dart';
 import '../../services/provision_service.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
@@ -210,11 +209,7 @@ class _ProvisionDeviceScreenState extends State<ProvisionDeviceScreen> {
                 // 6 — Éxito
                 _Step6Exito(
                   isEnergy: _isEnergy,
-                  onDone: () => Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.devices,
-                    (r) => r.settings.name == AppRoutes.dashboard,
-                  ),
+                  onDone: () => Navigator.pop(context),
                 ),
               ],
             ),

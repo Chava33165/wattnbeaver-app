@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nuestros Objetivos</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .slide {
+      width: 960px;
+      min-height: 540px;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-radius: 20px;
+      padding: 50px 60px;
+      border: 1px solid #334155;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(52,199,89,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .slide::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: -60px;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(0,122,255,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(52,199,89,0.15);
+      border: 1px solid rgba(52,199,89,0.4);
+      color: #34C759;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 42px;
+      font-weight: 800;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+      line-height: 1.1;
+    }
+
+    h1 span {
+      color: #34C759;
+    }
+
+    .divider {
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, #34C759, #007AFF);
+      border-radius: 2px;
+      margin: 16px 0 30px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      margin-top: 22px;
+    }
+
+    .general .section-title { color: #007AFF; }
+    .especificos .section-title { color: #AF52DE; }
+
+    .general-text {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.7;
+      background: rgba(0,122,255,0.07);
+      border-left: 3px solid #007AFF;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    ul li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.5;
+      background: rgba(175,82,222,0.07);
+      border: 1px solid rgba(175,82,222,0.15);
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+
+    ul li .dot {
+      width: 8px;
+      height: 8px;
+      min-width: 8px;
+      background: #AF52DE;
+      border-radius: 50%;
+      margin-top: 5px;
+    }
+
+    .logo {
+      position: absolute;
+      bottom: 28px;
+      right: 40px;
+      font-size: 12px;
+      color: #334155;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="badge">WattBeaver</div>
+    <h1>Nuestros <span>Objetivos</span> Son:</h1>
+    <div class="divider"></div>
+
+    <div class="general">
+      <div class="section-title">General</div>
+      <p class="general-text">
+        Desarrollar un sistema de hardware y software que permita a los hogares mexicanos
+        monitorear y gestionar su consumo de agua y energía eléctrica mediante una aplicación móvil.
+      </p>
+    </div>
+
+    <div class="especificos">
+      <div class="section-title">Específicos</div>
+      <ul>
+        <li><span class="dot"></span>Crear un módulo de hardware para la medición del consumo de agua en el hogar.</li>
+        <li><span class="dot"></span>Crear un módulo de hardware para la medición del consumo de energía eléctrica en el hogar.</li>
+        <li><span class="dot"></span>Diseñar un módulo de monitoreo de agua que registre y transmita los datos al sistema.</li>
+        <li><span class="dot"></span>Diseñar un módulo de monitoreo de energía eléctrica que registre y transmita los datos al sistema.</li>
+        <li><span class="dot"></span>Desarrollar una aplicación móvil que permita la visualización del consumo de agua y energía en tiempo real.</li>
+        <li><span class="dot"></span>Diseñar un módulo de gamificación que motive al usuario a reducir su consumo mediante recompensas y retos.</li>
+      </ul>
+    </div>
+
+    <div class="logo">WattBeaver · WATT</div>
+  </div>
+</body>
+</html>
