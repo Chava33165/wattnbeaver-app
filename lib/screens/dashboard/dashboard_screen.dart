@@ -24,6 +24,7 @@ import 'widgets/water_card.dart';
 import 'widgets/weekly_chart.dart';
 import 'widgets/device_quick_access.dart';
 import 'widgets/gamification_widget.dart';
+import 'widgets/habit_calendar.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -257,6 +258,7 @@ class _DashboardHomeState extends State<_DashboardHome> {
               // ── Métrica eléctrica principal ──
               EnergyCard(
                 summary: dashboard.energySummary,
+                energyWeek: dashboard.energyWeek,
                 onTap: () {},
               ),
               const SizedBox(height: 14),
@@ -264,6 +266,7 @@ class _DashboardHomeState extends State<_DashboardHome> {
               // ── Métrica hídrica principal ──
               WaterCard(
                 summary: dashboard.waterSummary,
+                waterWeek: dashboard.waterWeek,
                 onTap: () {},
               ),
               const SizedBox(height: 14),
@@ -273,6 +276,10 @@ class _DashboardHomeState extends State<_DashboardHome> {
                 energyWeek: dashboard.energyWeek,
                 waterWeek: dashboard.waterWeek,
               ),
+              const SizedBox(height: 14),
+
+              // ── Calendario de hábitos ──
+              const HabitCalendar(),
               const SizedBox(height: 14),
 
               // ── Dispositivos ──

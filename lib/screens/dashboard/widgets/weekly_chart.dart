@@ -151,6 +151,9 @@ class WeeklyChart extends StatelessWidget {
                 showDateLabels: waterMap.isEmpty,
                 assessment: _assessment,
                 avg: _avg(energyMap.values.toList()),
+                todayIndex: monday.weekday <= DateTime.now().weekday
+                    ? DateTime.now().weekday - 1
+                    : -1,
               ),
 
             if (energyMap.isNotEmpty && waterMap.isNotEmpty)
@@ -168,6 +171,9 @@ class WeeklyChart extends StatelessWidget {
                 showDateLabels: true,
                 assessment: _assessment,
                 avg: _avg(waterMap.values.toList()),
+                todayIndex: monday.weekday <= DateTime.now().weekday
+                    ? DateTime.now().weekday - 1
+                    : -1,
               ),
           ],
         ],
@@ -187,6 +193,7 @@ class _MiniChart extends StatelessWidget {
   final bool showDateLabels;
   final String Function(double val, double avg) assessment;
   final double avg;
+  final int todayIndex;
 
   const _MiniChart({
     required this.label,
@@ -198,7 +205,15 @@ class _MiniChart extends StatelessWidget {
     required this.showDateLabels,
     required this.assessment,
     required this.avg,
+    required this.todayIndex,
   });
+
+  Color _barColor(double val) {
+    if (val == 0) return domainColor.withValues(alpha: 0.12);
+    if (avg == 0) return domainColor;
+    if (val > avg * 1.25) return AppColors.coralIntenso;
+    return domainColor;
+  }
 
   double _maxY() {
     if (dataMap.isEmpty) return 10;
@@ -283,20 +298,28 @@ class _MiniChart extends StatelessWidget {
                     getTitlesWidget: (value, meta) {
                       final index = value.toInt();
                       final date = monday.add(Duration(days: index));
+                      final bool isToday = index == todayIndex;
                       return SizedBox(
                         height: 28,
                         child: Column(
                           children: [
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 4),
                             Text(
                               WeeklyChart._dayLetters[index],
-                              style: AppTextStyles.muted(context)
-                                  .copyWith(fontSize: 10),
+                              style: AppTextStyles.muted(context).copyWith(
+                                fontSize: 10,
+                                fontWeight: isToday
+                                    ? FontWeight.w700
+                                    : FontWeight.normal,
+                                color: isToday ? domainColor : null,
+                              ),
                             ),
                             Text(
                               '${date.day}',
-                              style: AppTextStyles.muted(context)
-                                  .copyWith(fontSize: 8),
+                              style: AppTextStyles.muted(context).copyWith(
+                                fontSize: 8,
+                                color: isToday ? domainColor : null,
+                              ),
                             ),
                           ],
                         ),
@@ -328,17 +351,22 @@ class _MiniChart extends StatelessWidget {
                   : null,
               barGroups: List.generate(7, (i) {
                 final val = dataMap[i] ?? 0.0;
+                final bool isToday = i == todayIndex;
                 return BarChartGroupData(
                   x: i,
                   barRods: [
                     BarChartRodData(
                       toY: val,
-                      color: val == 0
-                          ? domainColor.withValues(alpha: 0.12)
-                          : domainColor,
-                      width: 14,
+                      color: _barColor(val),
+                      width: isToday ? 17 : 13,
                       borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(5)),
+                      borderSide: isToday && val > 0
+                          ? BorderSide(
+                              color: _barColor(val).withValues(alpha: 0.5),
+                              width: 1.5,
+                            )
+                          : BorderSide.none,
                     ),
                   ],
                 );
