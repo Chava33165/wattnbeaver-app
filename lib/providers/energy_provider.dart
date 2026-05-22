@@ -9,6 +9,8 @@ class EnergyProvider extends ChangeNotifier {
   bool isLoading = false;
   String? error;
   String selectedPeriod = 'week';
+  int? selectedWeekDay;
+  List<dynamic> rawWeekHourlyData = [];
 
   static String _fmt(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -17,11 +19,11 @@ class EnergyProvider extends ChangeNotifier {
     isLoading = true;
     error = null;
     selectedPeriod = period;
+    if (period != 'week') selectedWeekDay = null;
     notifyListeners();
 
     try {
       if (period == 'year') {
-        // Año completo: 1 Ene → hoy, agrupado por mes
         final now = DateTime.now();
         final startDate = _fmt(DateTime(now.year, 1, 1));
         final endDate = _fmt(now);
@@ -38,9 +40,14 @@ class EnergyProvider extends ChangeNotifier {
         ]);
         summary = EnergySummary.fromJson(results[0]['data'] ?? results[0]);
         final historyData = results[1]['data'] ?? results[1];
-        history = period == 'day'
-            ? EnergyWeek.fromHourly(historyData)
-            : EnergyWeek.fromGroupedByDay(historyData);
+        if (period == 'day') {
+          history = EnergyWeek.fromHourly(historyData);
+        } else {
+          if (period == 'week') {
+            rawWeekHourlyData = (historyData['data'] as List?) ?? [];
+          }
+          history = EnergyWeek.fromGroupedByDay(historyData);
+        }
       }
     } catch (e) {
       error = e.toString();
@@ -52,5 +59,10 @@ class EnergyProvider extends ChangeNotifier {
 
   Future<void> changePeriod(String period) async {
     await loadEnergy(period: period);
+  }
+
+  void selectWeekDay(int? day) {
+    selectedWeekDay = day;
+    notifyListeners();
   }
 }

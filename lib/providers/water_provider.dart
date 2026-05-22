@@ -9,6 +9,8 @@ class WaterProvider extends ChangeNotifier {
   bool isLoading = false;
   String? error;
   String selectedPeriod = 'week';
+  int? selectedWeekDay;
+  List<dynamic> rawWeekHourlyData = [];
 
   static String _fmt(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -17,6 +19,7 @@ class WaterProvider extends ChangeNotifier {
     isLoading = true;
     error = null;
     selectedPeriod = period;
+    if (period != 'week') selectedWeekDay = null;
     notifyListeners();
 
     try {
@@ -37,9 +40,14 @@ class WaterProvider extends ChangeNotifier {
         ]);
         summary = WaterSummary.fromJson(results[0]['data'] ?? results[0]);
         final historyData = results[1]['data'] ?? results[1];
-        history = period == 'day'
-            ? WaterWeek.fromHourly(historyData)
-            : WaterWeek.fromGroupedByDay(historyData);
+        if (period == 'day') {
+          history = WaterWeek.fromHourly(historyData);
+        } else {
+          if (period == 'week') {
+            rawWeekHourlyData = (historyData['data'] as List?) ?? [];
+          }
+          history = WaterWeek.fromGroupedByDay(historyData);
+        }
       }
     } catch (e) {
       error = e.toString();
@@ -51,5 +59,10 @@ class WaterProvider extends ChangeNotifier {
 
   Future<void> changePeriod(String period) async {
     await loadWater(period: period);
+  }
+
+  void selectWeekDay(int? day) {
+    selectedWeekDay = day;
+    notifyListeners();
   }
 }
