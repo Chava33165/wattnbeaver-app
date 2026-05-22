@@ -259,6 +259,7 @@ class _DashboardHomeState extends State<_DashboardHome> {
               EnergyCard(
                 summary: dashboard.energySummary,
                 energyWeek: dashboard.energyWeek,
+                gamification: dashboard.gamification,
                 onTap: () {},
               ),
               const SizedBox(height: 14),
@@ -267,6 +268,7 @@ class _DashboardHomeState extends State<_DashboardHome> {
               WaterCard(
                 summary: dashboard.waterSummary,
                 waterWeek: dashboard.waterWeek,
+                gamification: dashboard.gamification,
                 onTap: () {},
               ),
               const SizedBox(height: 14),

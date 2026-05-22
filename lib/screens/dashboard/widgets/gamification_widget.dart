@@ -4,6 +4,7 @@ import '../../../core/theme/text_styles.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../models/gamification.dart';
 import '../../../routes/app_routes.dart';
+import '../../../widgets/charts/flame_widget.dart';
 
 class GamificationWidget extends StatelessWidget {
   final Gamification? gamification;
@@ -78,34 +79,12 @@ class GamificationWidget extends StatelessWidget {
                   ),
                 ),
 
-                // Racha + flecha
+                // Racha animada + flecha
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    if (streak > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.duraznoMedio.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.local_fire_department,
-                                size: 14, color: AppColors.duraznoMedio),
-                            const SizedBox(width: 3),
-                            Text(
-                              '$streak días',
-                              style: AppTextStyles.chip(context).copyWith(
-                                color: AppColors.duraznoMedio,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    const SizedBox(height: 6),
+                    FlameWidget(streak: streak, maxStreak: 100),
+                    const SizedBox(height: 4),
                     Icon(Icons.chevron_right_rounded,
                         color: AppColors.lavandaMedio.withValues(alpha: 0.7),
                         size: 20),

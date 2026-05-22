@@ -2,16 +2,25 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../core/widgets/glass_card.dart';
+import '../../../models/gamification.dart';
 import '../../../models/water_summary.dart';
 import '../../../models/water_week.dart';
 import '../../../widgets/charts/flame_widget.dart';
+import '../../../widgets/charts/water_drop_widget.dart';
 
 class WaterCard extends StatelessWidget {
   final WaterSummary? summary;
   final WaterWeek? waterWeek;
+  final Gamification? gamification;
   final VoidCallback? onTap;
 
-  const WaterCard({super.key, this.summary, this.waterWeek, this.onTap});
+  const WaterCard({
+    super.key,
+    this.summary,
+    this.waterWeek,
+    this.gamification,
+    this.onTap,
+  });
 
   Map<int, double> _weekdayMap() {
     final map = <int, double>{};
@@ -29,6 +38,54 @@ class WaterCard extends StatelessWidget {
     return ((today - avg) / avg) * 100;
   }
 
+  void _showInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.backgroundSecondary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('¿Qué significa la racha?',
+            style: AppTextStyles.title3.copyWith(color: AppColors.textPrimary)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Días consecutivos con medición de agua.',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            _InfoRow(
+              color: AppColors.cieloClaro,
+              label: '1–3 días',
+              desc: '¡Empezando!',
+            ),
+            const SizedBox(height: 8),
+            _InfoRow(
+              color: AppColors.cieloMedio,
+              label: '4–6 días',
+              desc: '¡Constante!',
+            ),
+            const SizedBox(height: 8),
+            _InfoRow(
+              color: AppColors.waterDark,
+              label: '7+ días',
+              desc: '¡Maestro del ahorro!',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Entendido',
+                style: TextStyle(color: AppColors.cieloMedio)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final double totalLiters = summary?.totalLiters ?? 0.0;
@@ -37,7 +94,8 @@ class WaterCard extends StatelessWidget {
 
     final weekdayMap = _weekdayMap();
     final avg = waterWeek?.weekAvg ?? 0.0;
-    final streak = calcFlameStreak(weekdayMap, avg);
+    final efficiencyStreak = calcFlameStreak(weekdayMap, avg);
+    final int streak = gamification?.currentStreak ?? efficiencyStreak;
 
     return GestureDetector(
       onTap: onTap,
@@ -70,7 +128,6 @@ class WaterCard extends StatelessWidget {
                   Text('Consumo hídrico hoy',
                       style: AppTextStyles.muted(context)),
                   const SizedBox(height: 6),
-                  // Badge % cambio vs promedio semana
                   if (waterWeek != null && waterWeek!.weekAvg > 0)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -109,7 +166,7 @@ class WaterCard extends StatelessWidget {
               ),
             ),
 
-            // ── Derecha: flamita + icono ──
+            // ── Derecha: icono + gotita ──
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -123,18 +180,62 @@ class WaterCard extends StatelessWidget {
                       color: AppColors.cieloMedio, size: 18),
                 ),
                 const SizedBox(height: 10),
-                Text(
-                  'Racha',
-                  style: AppTextStyles.muted(context)
-                      .copyWith(fontSize: 9),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Racha',
+                      style: AppTextStyles.muted(context).copyWith(fontSize: 9),
+                    ),
+                    const SizedBox(width: 2),
+                    GestureDetector(
+                      onTap: () => _showInfo(context),
+                      child: Icon(
+                        Icons.info_outline_rounded,
+                        size: 12,
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
-                FlameWidget(streak: streak, maxStreak: 7),
+                WaterDropWidget(streak: streak, maxStreak: 7),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final Color color;
+  final String label;
+  final String desc;
+
+  const _InfoRow(
+      {required this.color, required this.label, required this.desc});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '$label — $desc',
+          style: AppTextStyles.chip(context)
+              .copyWith(color: AppColors.textSecondary),
+        ),
+      ],
     );
   }
 }
