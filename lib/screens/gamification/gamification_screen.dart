@@ -7,6 +7,7 @@ import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_display.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/cards/stat_card.dart';
+import '../../widgets/charts/flame_widget.dart';
 import 'widgets/achievement_card.dart';
 import 'widgets/challenge_card.dart';
 import 'widgets/leaderboard_item.dart';
@@ -88,65 +89,178 @@ class _GamificationScreenState extends State<GamificationScreen>
     );
   }
 
+  String _streakMessage(int streak) {
+    if (streak >= 100) return '🏅 ¡100+ días! Eres inspiración';
+    if (streak >= 60)  return '👑 ¡2 meses! Leyenda absoluta';
+    if (streak >= 30)  return '🏆 ¡Un mes entero! Campeón';
+    if (streak >= 21)  return '💪 ¡3 semanas! Eres imparable';
+    if (streak >= 14)  return '🔥 ¡2 semanas! Estás en fuego';
+    if (streak >= 7)   return '⭐ ¡Una semana completa!';
+    if (streak >= 3)   return '🌱 ¡$streak días seguidos!';
+    if (streak == 2)   return '¡2 días! ¡Sigue así!';
+    return '¡Primer día! ¡Buen comienzo!';
+  }
+
   Widget _buildProfileBanner(GamificationProvider provider) {
     final profile = provider.profile!;
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: AppColors.gamificationGradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Nivel ${profile.currentLevel}',
-                style: AppTextStyles.title3.copyWith(color: Colors.white),
-              ),
-              Text(
-                '${profile.totalPoints} pts',
-                style: AppTextStyles.caption1.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
-                ),
-              ),
-            ],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.gamificationPurple.withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-          const Spacer(),
-          if (profile.currentStreak > 0)
-            Row(
-              children: [
-                const Icon(Icons.local_fire_department,
-                    color: Colors.orange, size: 20),
-                const SizedBox(width: 4),
-                Text(
-                  '${profile.currentStreak} días',
-                  style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+        ],
+      ),
+      child: Column(
+        children: [
+          // ── Fila: nivel + puntos + rank ──
+          Row(
+            children: [
+              // Badge nivel
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-              ],
-            ),
-          const SizedBox(width: 12),
-          if (profile.rank > 0)
-            Column(
-              children: [
-                Text(
-                  '#${profile.rank}',
-                  style: AppTextStyles.title2.copyWith(color: Colors.white),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'LVL',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    Text(
+                      '${profile.currentLevel}',
+                      style: AppTextStyles.title2.copyWith(
+                        color: Colors.white,
+                        height: 1.1,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  'Ranking',
-                  style: AppTextStyles.caption2.copyWith(
-                    color: Colors.white.withValues(alpha: 0.8),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${profile.totalPoints} puntos',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (profile.currentLevel < 10)
+                      Text(
+                        '${profile.pointsToNextLevel} pts para nivel ${profile.currentLevel + 1}',
+                        style: AppTextStyles.caption2.copyWith(
+                          color: Colors.white.withValues(alpha: 0.75),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              if (profile.rank > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'RANK',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      Text(
+                        '#${profile.rank}',
+                        style: AppTextStyles.title3.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+            ],
+          ),
+
+          const SizedBox(height: 18),
+
+          // ── Flamita central ──
+          FlameWidget(
+            streak: profile.currentStreak,
+            maxStreak: 30,
+          ),
+
+          // ── Mensaje de racha ──
+          const SizedBox(height: 6),
+          Text(
+            profile.currentStreak > 0
+                ? _streakMessage(profile.currentStreak)
+                : '¡Empieza tu racha hoy!',
+            style: AppTextStyles.caption1.copyWith(
+              color: Colors.white.withValues(alpha: 0.9),
+              fontWeight: FontWeight.w600,
             ),
+          ),
+
+          if (profile.bestStreak > 0) ...[
+            const SizedBox(height: 2),
+            Text(
+              'Mejor racha: ${profile.bestStreak} días',
+              style: AppTextStyles.caption2.copyWith(
+                color: Colors.white.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 16),
+
+          // ── Barra de progreso ──
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: profile.progressToNextLevel,
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              minHeight: 7,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '${(profile.progressToNextLevel * 100).toInt()}% hacia nivel ${profile.currentLevel + 1}',
+              style: AppTextStyles.caption2.copyWith(
+                color: Colors.white.withValues(alpha: 0.8),
+              ),
+            ),
+          ),
         ],
       ),
     );
