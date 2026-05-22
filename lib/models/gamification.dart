@@ -30,6 +30,21 @@ class Gamification {
     );
   }
 
-  double get progressToNextLevel => (totalPoints % 500) / 500;
-  int get pointsToNextLevel => 500 - (totalPoints % 500);
+  // Umbrales reales del backend: lv1=0, lv2=100, lv3=300, lv4=600...
+  static const List<int> _thresholds = [
+    0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500
+  ];
+
+  double get progressToNextLevel {
+    if (currentLevel >= 10) return 1.0;
+    final int start = _thresholds[(currentLevel - 1).clamp(0, 9)];
+    final int end   = _thresholds[currentLevel.clamp(0, 9)];
+    if (end <= start) return 1.0;
+    return ((totalPoints - start) / (end - start)).clamp(0.0, 1.0);
+  }
+
+  int get pointsToNextLevel {
+    if (currentLevel >= 10) return 0;
+    return (_thresholds[currentLevel.clamp(0, 9)] - totalPoints).clamp(0, 999999);
+  }
 }
