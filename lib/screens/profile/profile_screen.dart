@@ -59,6 +59,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             StatCard(
               child: Column(
                 children: [
+                  if (authProvider.isAdmin) ...[
+                    _menuItem(
+                      Icons.admin_panel_settings_outlined,
+                      'Panel de Administración',
+                      () => Navigator.pushNamed(context, AppRoutes.admin),
+                      color: AppColors.mentaOscuro,
+                    ),
+                    const Divider(height: 1),
+                  ],
                   _menuItem(Icons.person_outline, 'Editar perfil', () {}),
                   const Divider(height: 1),
                   _menuItem(Icons.notifications_outlined, 'Notificaciones',
@@ -169,10 +178,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _menuItem(IconData icon, String label, VoidCallback onTap) {
+  Widget _menuItem(IconData icon, String label, VoidCallback onTap, {Color? color}) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.textSecondary),
-      title: Text(label, style: AppTextStyles.body),
+      leading: Icon(icon, color: color ?? AppColors.textSecondary),
+      title: Text(label, style: AppTextStyles.body.copyWith(color: color)),
       trailing: const Icon(Icons.chevron_right,
           color: AppColors.textTertiary, size: 20),
       onTap: onTap,

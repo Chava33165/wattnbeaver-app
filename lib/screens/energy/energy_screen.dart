@@ -385,10 +385,12 @@ class _EnergyScreenState extends State<EnergyScreen> {
       final now = DateTime.now();
       final Map<String, double> kwhByMonth = {};
       for (final d in days) {
-        if (d.date.length >= 7) kwhByMonth[d.date] = d.totalKwh;
+        final monthKey = d.date.length >= 7 ? d.date.substring(0, 7) : '';
+        if (monthKey.isEmpty) continue;
+        kwhByMonth[monthKey] = (kwhByMonth[monthKey] ?? 0.0) + d.totalKwh;
       }
       return List.generate(12, (i) {
-        final monthKey = '${now.year}-${(i + 1).toString().padLeft(2, '00')}';
+        final monthKey = '${now.year}-${(i + 1).toString().padLeft(2, '0')}';
         return _ChartSlot(label: abbr[i], value: kwhByMonth[monthKey] ?? 0.0);
       });
     }

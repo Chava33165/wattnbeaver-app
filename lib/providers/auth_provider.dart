@@ -15,6 +15,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
   String? get error => _error;
+  bool get isAdmin => _user?.role == 'admin';
 
   Future<bool> checkAuth() async {
     try {

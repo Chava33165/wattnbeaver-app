@@ -12,9 +12,6 @@ class EnergyProvider extends ChangeNotifier {
   int? selectedWeekDay;
   List<dynamic> rawWeekHourlyData = [];
 
-  static String _fmt(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
   Future<void> loadEnergy({String period = 'week'}) async {
     isLoading = true;
     error = null;
@@ -24,15 +21,13 @@ class EnergyProvider extends ChangeNotifier {
 
     try {
       if (period == 'year') {
-        final now = DateTime.now();
-        final startDate = _fmt(DateTime(now.year, 1, 1));
-        final endDate = _fmt(now);
         final results = await Future.wait([
           EnergyApi.getTotal(),
-          EnergyApi.getWeeklyStats(startDate: startDate, endDate: endDate),
+          EnergyApi.getHistory(period: 'month'),
         ]);
         summary = EnergySummary.fromJson(results[0]['data'] ?? results[0]);
-        history = EnergyWeek.fromGroupedByMonth(results[1]['data'] ?? results[1]);
+        final historyData = results[1]['data'] ?? results[1];
+        history = EnergyWeek.fromGroupedByDay(historyData);
       } else {
         final results = await Future.wait([
           EnergyApi.getTotal(),

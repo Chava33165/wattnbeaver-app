@@ -15,4 +15,8 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String reports = '/reports';
   static const String onboarding = '/onboarding';
+
+  static const String admin           = '/admin';
+  static const String adminUsers      = '/admin/users';
+  static const String adminUserDetail = '/admin/users/detail';
 }

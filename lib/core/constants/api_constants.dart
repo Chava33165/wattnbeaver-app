@@ -44,4 +44,10 @@ class ApiConstants {
   static const String challenges = '/gamification/challenges';
   static const String challengesStart = '/gamification/challenges/start';
   static const String leaderboard = '/gamification/leaderboard';
+
+  // Admin
+  static const String adminUsers  = '/admin/users';
+  static String adminUser(String id) => '/admin/users/$id';
+  static const String adminStats  = '/admin/stats';
+  static const String adminServer = '/admin/server';
 }

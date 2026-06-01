@@ -382,10 +382,12 @@ class _WaterScreenState extends State<WaterScreen> {
       final now = DateTime.now();
       final Map<String, double> litersByMonth = {};
       for (final d in days) {
-        if (d.date.length >= 7) litersByMonth[d.date] = d.totalLiters;
+        final monthKey = d.date.length >= 7 ? d.date.substring(0, 7) : '';
+        if (monthKey.isEmpty) continue;
+        litersByMonth[monthKey] = (litersByMonth[monthKey] ?? 0.0) + d.totalLiters;
       }
       return List.generate(12, (i) {
-        final monthKey = '${now.year}-${(i + 1).toString().padLeft(2, '00')}';
+        final monthKey = '${now.year}-${(i + 1).toString().padLeft(2, '0')}';
         return _ChartSlot(label: abbr[i], value: litersByMonth[monthKey] ?? 0.0);
       });
     }

@@ -7,7 +7,11 @@ class NumberFormatter {
 
   static String watts(double value) => '${value.toStringAsFixed(0)} W';
 
-  static String liters(double value) => '${value.toStringAsFixed(0)} L';
+  static String liters(double value) {
+    if (value == 0) return '0 L';
+    if (value < 1) return '${(value * 1000).toStringAsFixed(0)} mL';
+    return '${value.toStringAsFixed(1)} L';
+  }
 
   static String percent(double value) {
     final prefix = value >= 0 ? '+' : '';

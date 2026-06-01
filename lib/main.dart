@@ -11,6 +11,7 @@ import 'providers/water_provider.dart';
 import 'providers/alerts_provider.dart';
 import 'providers/gamification_provider.dart';
 import 'providers/reports_provider.dart';
+import 'providers/admin_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +33,7 @@ class WattBeaverApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AlertsProvider()),
         ChangeNotifierProvider(create: (_) => GamificationProvider()),
         ChangeNotifierProvider(create: (_) => ReportsProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
       child: MaterialApp(
         title: 'WattBeaver',

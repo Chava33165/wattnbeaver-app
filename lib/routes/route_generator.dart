@@ -16,6 +16,9 @@ import '../screens/profile/profile_screen.dart';
 import '../screens/profile/settings_screen.dart';
 import '../screens/reports/reports_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
+import '../screens/admin/admin_screen.dart';
+import '../screens/admin/admin_users_screen.dart';
+import '../screens/admin/admin_user_detail_screen.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -55,6 +58,15 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ReportsScreen());
       case AppRoutes.onboarding:
         return MaterialPageRoute(builder: (_) => const OnboardingScreen());
+      case AppRoutes.admin:
+        return MaterialPageRoute(builder: (_) => const AdminScreen());
+      case AppRoutes.adminUsers:
+        return MaterialPageRoute(builder: (_) => const AdminUsersScreen());
+      case AppRoutes.adminUserDetail:
+        return MaterialPageRoute(
+          builder: (_) => const AdminUserDetailScreen(),
+          settings: settings,
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(
