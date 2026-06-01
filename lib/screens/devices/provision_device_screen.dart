@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../models/device.dart';
@@ -183,10 +182,13 @@ class _ProvisionDeviceScreenState extends State<ProvisionDeviceScreen> {
                 // 1 — Instrucciones
                 _Step1Instrucciones(isEnergy: _isEnergy, onNext: () => _goTo(2)),
                 // 2 — Conectar al AP
-                _Step2ConectarWiFi(isEnergy: _isEnergy, onNext: () {
-                  _goTo(3);
-                  _detectDevice();
-                }),
+                _Step2ConectarWiFi(
+                  isEnergy: _isEnergy,
+                  onNext: () {
+                    _goTo(3);
+                    _detectDevice();
+                  },
+                ),
                 // 3 — Detectando ESP32
                 _Step3Detectando(
                   isLoading: _isLoading,
@@ -205,7 +207,10 @@ class _ProvisionDeviceScreenState extends State<ProvisionDeviceScreen> {
                   onSubmit:     _configureDevice,
                 ),
                 // 5 — Reconectar
-                _Step5Reconectar(ssid: _ssidCtrl.text.trim(), onNext: () => _goTo(6)),
+                _Step5Reconectar(
+                  ssid: _ssidCtrl.text.trim(),
+                  onNext: () => _goTo(6),
+                ),
                 // 6 — Éxito
                 _Step6Exito(
                   isEnergy: _isEnergy,
@@ -491,18 +496,6 @@ class _Step2ConectarWiFi extends StatelessWidget {
           style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: 24),
-        OutlinedButton.icon(
-          onPressed: () => launchUrl(Uri.parse('App-Prefs:root=WIFI'),
-              mode: LaunchMode.externalApplication),
-          icon: const Icon(Icons.settings),
-          label: const Text('Abrir ajustes WiFi'),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: color,
-            side: BorderSide(color: color),
-            minimumSize: const Size.fromHeight(48),
-          ),
-        ),
-        const SizedBox(height: 12),
         CustomButton(
           text: 'Ya estoy conectado',
           color: color,
@@ -715,18 +708,6 @@ class _Step5Reconectar extends StatelessWidget {
           style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: 24),
-        OutlinedButton.icon(
-          onPressed: () => launchUrl(Uri.parse('App-Prefs:root=WIFI'),
-              mode: LaunchMode.externalApplication),
-          icon: const Icon(Icons.settings),
-          label: Text(ssid.isNotEmpty ? 'Conectarme a $ssid' : 'Abrir ajustes WiFi'),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.waterPrimary,
-            side: const BorderSide(color: AppColors.waterPrimary),
-            minimumSize: const Size.fromHeight(48),
-          ),
-        ),
-        const SizedBox(height: 12),
         CustomButton(
           text: 'Ya me conecté',
           color: AppColors.waterPrimary,

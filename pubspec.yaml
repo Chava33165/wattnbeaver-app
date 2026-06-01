@@ -41,6 +41,7 @@ dependencies:
   # Utilities
   connectivity_plus: ^5.0.2
   url_launcher: ^6.2.0
+  app_settings: ^5.1.1
 
   # Icons
   font_awesome_flutter: ^10.7.0
