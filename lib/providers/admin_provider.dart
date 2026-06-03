@@ -55,6 +55,24 @@ class AdminProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> createUser(Map<String, dynamic> body) async {
+    _isOperating = true;
+    _operationError = null;
+    notifyListeners();
+    try {
+      await AdminApi.createUser(body);
+      await loadUsers();
+      _isOperating = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _operationError = e.toString();
+      _isOperating = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> updateUser(
     String id,
     Map<String, dynamic> body,

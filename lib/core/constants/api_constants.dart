@@ -10,6 +10,8 @@ class ApiConstants {
   static const String devices = '/devices';
   static const String devicesLink = '/devices/link';
   static String device(String id) => '/devices/$id';
+  // POST alternativo para bypass de Cloudflare WAF (bloquea DELETE)
+  static String deviceUnlink(String id) => '/devices/$id/unlink';
 
   // Energy
   static const String energyTotal = '/energy/total';
@@ -48,6 +50,9 @@ class ApiConstants {
   // Admin
   static const String adminUsers  = '/admin/users';
   static String adminUser(String id) => '/admin/users/$id';
+  // Rutas POST alternativas (bypass Cloudflare WAF que bloquea DELETE/PUT)
+  static String adminUserDelete(String id) => '/admin/users/$id/delete';
+  static String adminUserUpdate(String id) => '/admin/users/$id/update';
   static const String adminStats  = '/admin/stats';
   static const String adminServer = '/admin/server';
 }

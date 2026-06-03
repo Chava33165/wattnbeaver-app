@@ -27,7 +27,8 @@ class DeviceApi {
   }
 
   static Future<Map<String, dynamic>> deleteDevice(String id) async {
-    return ApiService.delete(ApiConstants.device(id));
+    // POST alternativo para bypass de Cloudflare WAF (bloquea DELETE)
+    return ApiService.post(ApiConstants.deviceUnlink(id), {});
   }
 
   static Future<Map<String, dynamic>> rotateApiKey(String id) async {

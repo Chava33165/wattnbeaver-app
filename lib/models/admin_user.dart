@@ -8,6 +8,8 @@ class AdminUser {
   final int totalPoints;
   final int currentLevel;
   final int currentStreak;
+  final int daysInactive;
+  final DateTime? lastActivityDate;
 
   AdminUser({
     required this.id,
@@ -19,6 +21,8 @@ class AdminUser {
     this.totalPoints = 0,
     this.currentLevel = 1,
     this.currentStreak = 0,
+    this.daysInactive = 0,
+    this.lastActivityDate,
   });
 
   factory AdminUser.fromJson(Map<String, dynamic> json) {
@@ -34,6 +38,10 @@ class AdminUser {
       totalPoints: int.tryParse(json['total_points']?.toString() ?? '0') ?? 0,
       currentLevel: int.tryParse(json['current_level']?.toString() ?? '1') ?? 1,
       currentStreak: int.tryParse(json['current_streak']?.toString() ?? '0') ?? 0,
+      daysInactive: int.tryParse(json['days_inactive']?.toString() ?? '0') ?? 0,
+      lastActivityDate: json['last_activity_date'] != null
+          ? DateTime.tryParse(json['last_activity_date'])
+          : null,
     );
   }
 
@@ -46,7 +54,16 @@ class AdminUser {
 
   bool get isAdmin => role == 'admin';
 
-  AdminUser copyWith({String? name, String? email, String? role}) {
+  // Si tiene 5+ días inactivo, se puede eliminar
+  bool get canBeDeleted => daysInactive >= 5;
+
+  AdminUser copyWith({
+    String? name,
+    String? email,
+    String? role,
+    int? daysInactive,
+    DateTime? lastActivityDate,
+  }) {
     return AdminUser(
       id: id,
       name: name ?? this.name,
@@ -57,6 +74,8 @@ class AdminUser {
       totalPoints: totalPoints,
       currentLevel: currentLevel,
       currentStreak: currentStreak,
+      daysInactive: daysInactive ?? this.daysInactive,
+      lastActivityDate: lastActivityDate ?? this.lastActivityDate,
     );
   }
 }

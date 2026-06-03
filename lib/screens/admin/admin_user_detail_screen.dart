@@ -213,6 +213,31 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                     const Divider(height: 20),
                     _infoRow('Creado', DateFormatter.formatDate(_user.createdAt!)),
                   ],
+                  const Divider(height: 20),
+                  _infoRow(
+                    'Última actividad',
+                    _user.lastActivityDate != null
+                        ? DateFormatter.formatDate(_user.lastActivityDate!)
+                        : 'Sin actividad IoT',
+                  ),
+                  const Divider(height: 20),
+                  _infoRowColored(
+                    'Días inactivo',
+                    '${_user.daysInactive} días',
+                    _user.daysInactive >= 5
+                        ? AppColors.alertRed
+                        : _user.daysInactive >= 3
+                            ? AppColors.accentOrange
+                            : AppColors.energyPrimary,
+                  ),
+                  if (_user.daysInactive < 5 && !_user.isAdmin) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Se necesitan 5 días de inactividad para poder eliminarlo',
+                      style: AppTextStyles.caption1.copyWith(color: AppColors.textTertiary),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -221,10 +246,17 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: provider.isOperating ? null : _delete,
-                  icon: const Icon(Icons.delete_outline, color: AppColors.alertRed),
-                  label: const Text('Eliminar usuario',
-                      style: TextStyle(color: AppColors.alertRed)),
+                  onPressed: (provider.isOperating || !_user.canBeDeleted) ? null : _delete,
+                  icon: Icon(Icons.delete_outline,
+                      color: _user.canBeDeleted ? AppColors.alertRed : AppColors.textTertiary),
+                  label: Text(
+                    _user.canBeDeleted
+                        ? 'Eliminar usuario'
+                        : 'Disponible en ${5 - _user.daysInactive} día(s) más',
+                    style: TextStyle(
+                      color: _user.canBeDeleted ? AppColors.alertRed : AppColors.textTertiary,
+                    ),
+                  ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(color: AppColors.alertRed),
@@ -264,6 +296,20 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.end),
         ),
+      ],
+    );
+  }
+
+  Widget _infoRowColored(String label, String value, Color valueColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
+        Text(value,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: valueColor,
+              fontWeight: FontWeight.bold,
+            )),
       ],
     );
   }

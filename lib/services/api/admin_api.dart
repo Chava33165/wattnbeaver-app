@@ -14,11 +14,19 @@ class AdminApi {
     String id,
     Map<String, dynamic> body,
   ) async {
-    return ApiService.put(ApiConstants.adminUser(id), body);
+    // POST alternativo para bypass de Cloudflare WAF (bloquea PUT)
+    return ApiService.post(ApiConstants.adminUserUpdate(id), body);
   }
 
   static Future<Map<String, dynamic>> deleteUser(String id) async {
-    return ApiService.delete(ApiConstants.adminUser(id));
+    // POST alternativo para bypass de Cloudflare WAF (bloquea DELETE)
+    return ApiService.post(ApiConstants.adminUserDelete(id), {});
+  }
+
+  static Future<Map<String, dynamic>> createUser(
+    Map<String, dynamic> body,
+  ) async {
+    return ApiService.post(ApiConstants.adminUsers, body);
   }
 
   static Future<Map<String, dynamic>> getStats() async {

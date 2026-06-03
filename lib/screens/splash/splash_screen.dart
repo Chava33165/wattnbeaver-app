@@ -43,12 +43,17 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     if (isAuthenticated) {
-      final onboardingDone = await StorageService.hasCompletedOnboarding();
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(
-        context,
-        onboardingDone ? AppRoutes.dashboard : AppRoutes.onboarding,
-      );
+      if (authProvider.isAdmin) {
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, AppRoutes.admin);
+      } else {
+        final onboardingDone = await StorageService.hasCompletedOnboarding();
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(
+          context,
+          onboardingDone ? AppRoutes.dashboard : AppRoutes.onboarding,
+        );
+      }
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     }
