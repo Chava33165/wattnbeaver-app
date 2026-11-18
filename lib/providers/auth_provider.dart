@@ -91,6 +91,31 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProfile({String? name, String? password}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final data = <String, dynamic>{};
+      if (name != null && name.trim().isNotEmpty) data['name'] = name.trim();
+      if (password != null && password.isNotEmpty) data['password'] = password;
+
+      final response = await AuthApi.updateProfile(data);
+      final outer = response['data'] ?? response;
+      final userData = outer['user'] ?? outer;
+      _user = User.fromJson(userData);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     await StorageService.clear();
     _user = null;

@@ -38,4 +38,5 @@ class Alert {
   bool get isCritical => severity == 'critical';
   bool get isWarning => severity == 'warning';
   bool get isInfo => severity == 'info';
+  bool get isLocal => id.startsWith('local_');
 }

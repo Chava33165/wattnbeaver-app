@@ -16,8 +16,6 @@ class HabitCalendar extends StatefulWidget {
 class _HabitCalendarState extends State<HabitCalendar> {
   Map<String, double> _energyByDay = {};
   Map<String, double> _waterByDay = {};
-  double _energyAvg = 0;
-  double _waterAvg = 0;
   bool _loading = true;
 
   static String _fmt(DateTime d) =>
@@ -41,34 +39,29 @@ class _HabitCalendarState extends State<HabitCalendar> {
             startDate: _fmt(firstDay), endDate: _fmt(now)),
       ]);
 
-      final energyRows = (results[0]['data'] as List?) ?? [];
+      // El backend devuelve: {success, data: {data: [...], period, totalDays}}
+      final energyOuter = results[0]['data'] as Map<String, dynamic>? ?? {};
+      final energyRows = (energyOuter['data'] as List?) ?? [];
       final Map<String, double> emap = {};
       for (final r in energyRows) {
         final date = r['fecha'] as String? ?? '';
         final kwh = (r['consumo_dia_kwh'] as num?)?.toDouble() ?? 0.0;
         if (date.isNotEmpty && kwh > 0) emap[date] = kwh;
       }
-      final eavg = emap.isEmpty
-          ? 0.0
-          : emap.values.reduce((a, b) => a + b) / emap.length;
 
-      final waterRows = (results[1]['data'] as List?) ?? [];
+      final waterOuter = results[1]['data'] as Map<String, dynamic>? ?? {};
+      final waterRows = (waterOuter['data'] as List?) ?? [];
       final Map<String, double> wmap = {};
       for (final r in waterRows) {
         final date = r['fecha'] as String? ?? '';
         final liters = (r['consumo_dia_litros'] as num?)?.toDouble() ?? 0.0;
         if (date.isNotEmpty && liters > 0) wmap[date] = liters;
       }
-      final wavg = wmap.isEmpty
-          ? 0.0
-          : wmap.values.reduce((a, b) => a + b) / wmap.length;
 
       if (mounted) {
         setState(() {
           _energyByDay = emap;
           _waterByDay = wmap;
-          _energyAvg = eavg;
-          _waterAvg = wavg;
           _loading = false;
         });
       }
@@ -132,8 +125,6 @@ class _HabitCalendarState extends State<HabitCalendar> {
               offset: offset,
               energyByDay: _energyByDay,
               waterByDay: _waterByDay,
-              energyAvg: _energyAvg,
-              waterAvg: _waterAvg,
             ),
         ],
       ),
@@ -148,8 +139,6 @@ class _CalendarGrid extends StatelessWidget {
   final int offset;
   final Map<String, double> energyByDay;
   final Map<String, double> waterByDay;
-  final double energyAvg;
-  final double waterAvg;
 
   const _CalendarGrid({
     required this.now,
@@ -157,8 +146,6 @@ class _CalendarGrid extends StatelessWidget {
     required this.offset,
     required this.energyByDay,
     required this.waterByDay,
-    required this.energyAvg,
-    required this.waterAvg,
   });
 
   static const _headers = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -205,20 +192,9 @@ class _CalendarGrid extends StatelessWidget {
               final isFuture = day > now.day;
               final isToday = day == now.day;
 
-              final hasEnergyData = energyByDay.containsKey(date);
-              final hasWaterData = waterByDay.containsKey(date);
-
-              final energySaved = !isFuture &&
-                  hasEnergyData &&
-                  energyAvg > 0 &&
-                  energyByDay[date]! < energyAvg;
-
-              final waterSaved = !isFuture &&
-                  hasWaterData &&
-                  waterAvg > 0 &&
-                  waterByDay[date]! < waterAvg;
-
-              final bothSaved = energySaved && waterSaved;
+              final energySaved = !isFuture && energyByDay.containsKey(date);
+              final waterSaved  = !isFuture && waterByDay.containsKey(date);
+              final bothSaved   = energySaved && waterSaved;
 
               return Expanded(
                 child: _DayCell(

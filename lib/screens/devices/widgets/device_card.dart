@@ -82,6 +82,24 @@ class DeviceCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if (device.streak > 0) ...[
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.local_fire_department_rounded,
+                        color: AppColors.accentOrange, size: 13),
+                    const SizedBox(width: 2),
+                    Text(
+                      '${device.streak} días',
+                      style: AppTextStyles.caption2.copyWith(
+                        color: AppColors.accentOrange,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               if (onDelete != null) ...[
                 const SizedBox(height: 4),
                 GestureDetector(

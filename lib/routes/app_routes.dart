@@ -12,6 +12,7 @@ class AppRoutes {
   static const String alerts = '/alerts';
   static const String gamification = '/gamification';
   static const String profile = '/profile';
+  static const String editProfile = '/profile/edit';
   static const String settings = '/settings';
   static const String reports = '/reports';
   static const String onboarding = '/onboarding';

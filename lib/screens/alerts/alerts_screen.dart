@@ -5,6 +5,8 @@ import '../../core/theme/text_styles.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../models/alert.dart';
 import '../../providers/alerts_provider.dart';
+import '../../providers/devices_provider.dart';
+import '../../providers/gamification_provider.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_display.dart';
 import '../../widgets/common/empty_state.dart';
@@ -23,7 +25,71 @@ class _AlertsScreenState extends State<AlertsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AlertsProvider>().loadAlerts();
+      context.read<DevicesProvider>().loadDevices();
+      final gam = context.read<GamificationProvider>();
+      if (gam.profile == null) gam.loadAll();
     });
+  }
+
+  // Genera alertas locales a partir de datos ya disponibles en providers
+  List<Alert> _buildLocalAlerts(
+      GamificationProvider gam, DevicesProvider devicesProvider) {
+    final result = <Alert>[];
+    final now = DateTime.now();
+
+    // ── Dispositivos offline ──────────────────────────────────────────────
+    for (final d in devicesProvider.devices.where((d) => !d.isOnline)) {
+      result.add(Alert(
+        id: 'local_offline_${d.deviceId}',
+        type: 'system',
+        severity: 'critical',
+        message: '${d.deviceName} sin actividad ⚠️',
+        deviceId: d.deviceId,
+        createdAt: now,
+      ));
+    }
+
+    // ── Logros completados ────────────────────────────────────────────────
+    for (final a in gam.achievements.where((a) => a.isCompleted)) {
+      result.add(Alert(
+        id: 'local_achievement_${a.id}',
+        type: 'gamification',
+        severity: 'info',
+        message: '¡Desbloqueaste "${a.name}"! +${a.points} pts 🏆',
+        createdAt: a.completedAt ?? now,
+      ));
+    }
+
+    // ── Mensajes motivadores por racha ────────────────────────────────────
+    final streak = gam.profile?.currentStreak ?? 0;
+    if (streak > 0) {
+      const milestones = {
+        1: '¡Buen inicio! Llevas 1 día monitoreando tu consumo 🌱',
+        3: '¡3 días seguidos! Tu constancia marca la diferencia 💪',
+        7: '¡Una semana completa de racha! Eres un crack 🔥',
+        14: '¡Dos semanas de racha! Estás construyendo un hábito real ⚡',
+        30: '¡30 días de racha! Leyenda del ahorro en WattBeaver 🏆',
+      };
+      if (milestones.containsKey(streak)) {
+        result.add(Alert(
+          id: 'local_streak_$streak',
+          type: 'gamification',
+          severity: 'info',
+          message: milestones[streak]!,
+          createdAt: now,
+        ));
+      } else if (streak > 1) {
+        result.add(Alert(
+          id: 'local_streak_active',
+          type: 'gamification',
+          severity: 'info',
+          message: '¡Llevas $streak días de racha activos! Sigue así 🔥',
+          createdAt: now,
+        ));
+      }
+    }
+
+    return result;
   }
 
   @override
@@ -35,24 +101,41 @@ class _AlertsScreenState extends State<AlertsScreen> {
         backgroundColor: AppColors.backgroundPrimary,
         elevation: 0,
       ),
-      body: Consumer<AlertsProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading) return const LoadingIndicator();
-          if (provider.error != null) {
+      body: Consumer3<AlertsProvider, GamificationProvider, DevicesProvider>(
+        builder: (context, alertsProvider, gamProvider, devicesProvider, _) {
+          if (alertsProvider.isLoading) return const LoadingIndicator();
+          if (alertsProvider.error != null) {
             return ErrorDisplay(
-              message: provider.error!,
-              onRetry: provider.loadAlerts,
+              message: alertsProvider.error!,
+              onRetry: alertsProvider.loadAlerts,
             );
           }
 
+          final local = _buildLocalAlerts(gamProvider, devicesProvider);
+          final server = alertsProvider.filteredAlerts;
+
+          // Aplicar el mismo filtro de severidad a las alertas locales
+          final filteredLocal = alertsProvider.filterSeverity == 'all'
+              ? local
+              : local
+                  .where((a) => a.severity == alertsProvider.filterSeverity)
+                  .toList();
+
+          final combined = [...server, ...filteredLocal]
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
           return RefreshIndicator(
-            onRefresh: provider.loadAlerts,
+            onRefresh: () async {
+              await alertsProvider.loadAlerts();
+              await devicesProvider.loadDevices();
+              if (gamProvider.profile == null) await gamProvider.loadAll();
+            },
             color: AppColors.alertRed,
             child: Column(
               children: [
-                _buildFilterChips(provider),
+                _buildFilterChips(alertsProvider),
                 Expanded(
-                  child: provider.filteredAlerts.isEmpty
+                  child: combined.isEmpty
                       ? const EmptyState(
                           icon: Icons.notifications_none,
                           title: 'Sin alertas',
@@ -60,14 +143,17 @@ class _AlertsScreenState extends State<AlertsScreen> {
                         )
                       : ListView.separated(
                           padding: const EdgeInsets.all(16),
-                          itemCount: provider.filteredAlerts.length,
+                          itemCount: combined.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 8),
                           itemBuilder: (context, i) {
+                            final alert = combined[i];
                             return _AlertCard(
-                              alert: provider.filteredAlerts[i],
-                              onAcknowledge: () => provider
-                                  .acknowledgeAlert(provider.filteredAlerts[i].id),
+                              alert: alert,
+                              onAcknowledge: alert.isLocal
+                                  ? null
+                                  : () => alertsProvider
+                                      .acknowledgeAlert(alert.id),
                             );
                           },
                         ),
@@ -136,6 +222,7 @@ class _AlertCard extends StatelessWidget {
   }
 
   IconData _severityIcon() {
+    if (alert.type == 'gamification') return Icons.emoji_events_rounded;
     if (alert.isCritical) return Icons.error;
     if (alert.isWarning) return Icons.warning_amber;
     return Icons.info_outline;

@@ -44,6 +44,7 @@ class Device {
   final String apiKey;
   final DeviceReading? currentReading;
   final DateTime? createdAt;
+  final int streak;
 
   Device({
     required this.id,
@@ -55,6 +56,7 @@ class Device {
     this.apiKey = '',
     this.currentReading,
     this.createdAt,
+    this.streak = 0,
   });
 
   factory Device.fromJson(Map<String, dynamic> json) {
@@ -72,6 +74,7 @@ class Device {
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'])
           : null,
+      streak: (json['streak'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -103,6 +106,7 @@ class Device {
       apiKey: apiKey ?? this.apiKey,
       currentReading: currentReading,
       createdAt: createdAt,
+      streak: streak,
     );
   }
 }

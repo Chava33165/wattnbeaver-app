@@ -56,6 +56,15 @@ class GamificationProvider extends ChangeNotifier {
     }
   }
 
+  void reset() {
+    profile = null;
+    achievements = [];
+    activeChallenges = [];
+    leaderboard = null;
+    error = null;
+    notifyListeners();
+  }
+
   Future<void> loadLeaderboard() async {
     try {
       final response = await GamificationApi.getLeaderboard();

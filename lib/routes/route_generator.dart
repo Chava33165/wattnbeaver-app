@@ -13,6 +13,7 @@ import '../screens/water/water_screen.dart';
 import '../screens/alerts/alerts_screen.dart';
 import '../screens/gamification/gamification_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/profile/edit_profile_screen.dart';
 import '../screens/profile/settings_screen.dart';
 import '../screens/reports/reports_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
@@ -52,6 +53,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const GamificationScreen());
       case AppRoutes.profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
+      case AppRoutes.editProfile:
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
       case AppRoutes.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
       case AppRoutes.reports:
